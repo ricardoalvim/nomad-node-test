@@ -1,4 +1,4 @@
-import { Weapon } from "../weapon.enum"
+import { Weapon } from "../enum/weapon.enum"
 
 export interface ParsedPlayer {
     name: string
@@ -36,9 +36,4 @@ export interface MatchRankingDto {
     matchId: string
     winnerWeapon: string | null
     ranking: PlayerRanking[]
-}
-
-export interface GlobalPlayerRanking {
-    name: string
-    totalFrags: number
 }

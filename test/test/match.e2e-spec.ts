@@ -4,8 +4,8 @@ import * as request from 'supertest'
 import { Connection } from 'mongoose'
 import { getConnectionToken } from '@nestjs/mongoose'
 import { AppModule } from 'src/app.module'
-import { PlayerName } from 'src/shared/player.enum'
-import { ApiRoutes } from 'src/shared/api-routes'
+import { PlayerName } from 'src/shared/enum/player.enum'
+import { ApiRoutes } from 'src/shared/enum/api-routes.enum'
 
 describe('MatchController (e2e)', () => {
   let app: INestApplication
