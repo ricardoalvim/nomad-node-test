@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { MatchEntity } from '../../infra/persistence/match.schema'
 import { LogParserService, ParsedMatch } from '../services/log-parser.service'
+import { MatchRepository } from '../../domain/repositories/match.repository'
 
 @Injectable()
 export class ProcessLogUseCase {
     constructor(
         private readonly logParserService: LogParserService,
-        @InjectModel(MatchEntity.name) private readonly matchModel: Model<MatchEntity>,
+        private readonly matchRepository: MatchRepository,
     ) { }
 
     async execute(fileBuffer: Buffer): Promise<void> {
@@ -19,18 +17,7 @@ export class ProcessLogUseCase {
             this.applyBusinessRulesAndAwards(match)
             const winningWeapon = this.getWinningWeapon(match)
 
-            // Faz o upsert para evitar duplicidade caso mandem o mesmo log duas vezes
-            await this.matchModel.findOneAndUpdate(
-                { matchId: match.matchId },
-                {
-                    matchId: match.matchId,
-                    // Em um parser completo, extrairíamos startTime e endTime do log
-                    startTime: new Date(),
-                    players: match.players,
-                    winningWeapon,
-                },
-                { upsert: true, new: true },
-            )
+            await this.matchRepository.save(match, winningWeapon)
         }
     }
 
@@ -39,18 +26,14 @@ export class ProcessLogUseCase {
             const player = match.players[playerName]
             const awards: string[] = []
 
-            // Bônus: Award "Imortal"
             if (player.deaths === 0 && player.frags > 0) {
                 awards.push('Imortal')
             }
 
-            // Bônus: 5 kills em 1 minuto
             if (this.hasFastKillsStreak(player.killTimestamps)) {
                 awards.push('Rambo')
             }
 
-            // Adicionamos os awards no objeto do jogador antes de salvar
-            // (Certifique-se de adicionar a propriedade 'awards: string[]' na sua interface ParsedPlayer)
             ; (player as any).awards = awards
         }
     }
@@ -58,14 +41,10 @@ export class ProcessLogUseCase {
     private hasFastKillsStreak(killTimestamps: Date[]): boolean {
         if (killTimestamps.length < 5) return false
 
-        // Garante que os tempos estão em ordem cronológica
         const sortedTimestamps = [...killTimestamps].sort((a, b) => a.getTime() - b.getTime())
 
-        // Percorre o array olhando sempre para a kill atual e a 4 kills para trás
         for (let i = 4; i < sortedTimestamps.length; i++) {
             const timeDiffMs = sortedTimestamps[i].getTime() - sortedTimestamps[i - 4].getTime()
-
-            // 60000 ms = 1 minuto
             if (timeDiffMs <= 60000) {
                 return true
             }
@@ -88,7 +67,6 @@ export class ProcessLogUseCase {
 
         if (!winner || Object.keys(winner.weapons).length === 0) return null
 
-        // Descobre qual arma o vencedor mais usou
         let bestWeapon = null
         let maxWeaponKills = -1
 
