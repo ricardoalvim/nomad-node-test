@@ -1,104 +1,85 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
-import { MatchEntity } from '../../infra/persistence/match.schema'
-import { LogParserService, ParsedMatch } from '../services/log-parser.service'
+import { LogParserService } from '../services/log-parser.service'
+import { ParsedMatch } from 'src/shared/interfaces/match.interfaces'
+import { Weapon } from 'src/shared/weapon.enum'
+import { Award } from 'src/shared/award.enum'
+import { MatchRepository } from '../../domain/repositories/match.repository'
 
 @Injectable()
 export class ProcessLogUseCase {
-    constructor(
-        private readonly logParserService: LogParserService,
-        @InjectModel(MatchEntity.name) private readonly matchModel: Model<MatchEntity>,
-    ) { }
+  constructor(
+    private readonly logParserService: LogParserService,
+    private readonly matchRepository: MatchRepository,
+  ) { }
 
-    async execute(fileBuffer: Buffer): Promise<void> {
-        const fileContent = fileBuffer.toString('utf-8')
-        const parsedMatches = this.logParserService.parseLogContent(fileContent)
+  async execute(fileBuffer: Buffer): Promise<void> {
+    const fileContent = fileBuffer.toString('utf-8')
+    const parsedMatches = this.logParserService.parseLogContent(fileContent)
 
-        for (const match of parsedMatches) {
-            this.applyBusinessRulesAndAwards(match)
-            const winningWeapon = this.getWinningWeapon(match)
+    for (const match of parsedMatches) {
+      this.applyBusinessRulesAndAwards(match)
+      const winningWeapon = this.getWinningWeapon(match)
 
-            // Faz o upsert para evitar duplicidade caso mandem o mesmo log duas vezes
-            await this.matchModel.findOneAndUpdate(
-                { matchId: match.matchId },
-                {
-                    matchId: match.matchId,
-                    // Em um parser completo, extrairíamos startTime e endTime do log
-                    startTime: new Date(),
-                    players: match.players,
-                    winningWeapon,
-                },
-                { upsert: true, new: true },
-            )
-        }
+      await this.matchRepository.save(match, winningWeapon)
+    }
+  }
+
+  private applyBusinessRulesAndAwards(match: ParsedMatch): void {
+    for (const playerName in match.players) {
+      const player = match.players[playerName]
+      const awards: string[] = []
+
+      if (player.deaths === 0 && player.frags > 0) {
+        awards.push(Award.Immortal)
+      }
+
+      if (this.hasFastKillsStreak(player.killTimestamps)) {
+        awards.push(Award.Rambo)
+      }
+
+      ; (player as any).awards = awards
+    }
+  }
+
+  private hasFastKillsStreak(killTimestamps: Date[]): boolean {
+    if (killTimestamps.length < 5) return false
+
+    const sortedTimestamps = [...killTimestamps].sort((a, b) => a.getTime() - b.getTime())
+
+    for (let i = 4; i < sortedTimestamps.length; i++) {
+      const timeDiffMs = sortedTimestamps[i].getTime() - sortedTimestamps[i - 4].getTime()
+      if (timeDiffMs <= 60000) {
+        return true
+      }
     }
 
-    private applyBusinessRulesAndAwards(match: ParsedMatch): void {
-        for (const playerName in match.players) {
-            const player = match.players[playerName]
-            const awards: string[] = []
+    return false
+  }
 
-            // Bônus: Award "Imortal"
-            if (player.deaths === 0 && player.frags > 0) {
-                awards.push('Imortal')
-            }
+  private getWinningWeapon(match: ParsedMatch): Weapon | null {
+    let winner = null
+    let maxFrags = -1
 
-            // Bônus: 5 kills em 1 minuto
-            if (this.hasFastKillsStreak(player.killTimestamps)) {
-                awards.push('Rambo')
-            }
-
-            // Adicionamos os awards no objeto do jogador antes de salvar
-            // (Certifique-se de adicionar a propriedade 'awards: string[]' na sua interface ParsedPlayer)
-            ; (player as any).awards = awards
-        }
+    for (const playerName in match.players) {
+      const player = match.players[playerName]
+      if (player.frags > maxFrags) {
+        maxFrags = player.frags
+        winner = player
+      }
     }
 
-    private hasFastKillsStreak(killTimestamps: Date[]): boolean {
-        if (killTimestamps.length < 5) return false
+    if (!winner || Object.keys(winner.weapons).length === 0) return null
 
-        // Garante que os tempos estão em ordem cronológica
-        const sortedTimestamps = [...killTimestamps].sort((a, b) => a.getTime() - b.getTime())
+    let bestWeapon: Weapon | null = null
+    let maxWeaponKills = -1
 
-        // Percorre o array olhando sempre para a kill atual e a 4 kills para trás
-        for (let i = 4; i < sortedTimestamps.length; i++) {
-            const timeDiffMs = sortedTimestamps[i].getTime() - sortedTimestamps[i - 4].getTime()
-
-            // 60000 ms = 1 minuto
-            if (timeDiffMs <= 60000) {
-                return true
-            }
-        }
-
-        return false
+    for (const weapon in winner.weapons) {
+      if (winner.weapons[weapon] > maxWeaponKills) {
+        maxWeaponKills = winner.weapons[weapon]
+        bestWeapon = weapon as Weapon
+      }
     }
 
-    private getWinningWeapon(match: ParsedMatch): string | null {
-        let winner = null
-        let maxFrags = -1
-
-        for (const playerName in match.players) {
-            const player = match.players[playerName]
-            if (player.frags > maxFrags) {
-                maxFrags = player.frags
-                winner = player
-            }
-        }
-
-        if (!winner || Object.keys(winner.weapons).length === 0) return null
-
-        // Descobre qual arma o vencedor mais usou
-        let bestWeapon = null
-        let maxWeaponKills = -1
-
-        for (const weapon in winner.weapons) {
-            if (winner.weapons[weapon] > maxWeaponKills) {
-                maxWeaponKills = winner.weapons[weapon]
-                bestWeapon = weapon
-            }
-        }
-
-        return bestWeapon
-    }
+    return bestWeapon
+  }
 }

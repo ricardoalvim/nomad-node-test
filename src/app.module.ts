@@ -5,14 +5,14 @@ import { RedisCacheModule } from './infra/cache/redis-cache.module'
 import { MatchModule } from './modules/match/match.module'
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            envFilePath: '.env',
-        }),
-        DatabaseModule,
-        RedisCacheModule,
-        MatchModule
-    ],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    DatabaseModule,
+    RedisCacheModule,
+    MatchModule,
+  ],
 })
-export class AppModule { }
+export class AppModule {}
