@@ -5,6 +5,8 @@ import { Weapon } from 'src/shared/enum/weapon.enum'
 
 @Injectable()
 export class LogParserService {
+  private readonly MAX_PLAYERS_PER_MATCH = 20
+
   private readonly LINE_REGEX = /^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}) - (.*)$/
   private readonly MATCH_START_REGEX = /New match (\d+) has started/
   private readonly MATCH_END_REGEX = /Match (\d+) has ended/
@@ -69,11 +71,18 @@ export class LogParserService {
         const victim = currentMatch.players[victimName]
 
         if (killerName !== victimName) {
-          killer.frags += 1
-          killer.currentStreak += 1
-          if (killer.currentStreak > killer.longestStreak) {
-            killer.longestStreak = killer.currentStreak
+          const isFriendlyFire = killer.team && victim.team && killer.team === victim.team
+
+          if (isFriendlyFire) {
+            killer.frags -= 1
+          } else {
+            killer.frags += 1
+            killer.currentStreak += 1
+            if (killer.currentStreak > killer.longestStreak) {
+              killer.longestStreak = killer.currentStreak
+            }
           }
+
           killer.weapons[weapon] = (killer.weapons[weapon] || 0) + 1
           killer.killTimestamps.push(this.parseDate(dateStr))
         }
@@ -141,8 +150,21 @@ export class LogParserService {
     return false
   }
 
-  private ensurePlayerExists(match: ParsedMatch, playerName: string) {
+  /**
+   * Ensure player exists in match. Throws if exceeding 20 players per match.
+   * Initializes new players with default stats (0 frags, 0 deaths, etc.)
+   * @throws Error if trying to add player when match has 20+ players
+   */
+  private ensurePlayerExists(match: ParsedMatch, playerName: string): void {
     if (!match.players[playerName]) {
+      // Validate the 20-player limit before adding
+      if (Object.keys(match.players).length >= this.MAX_PLAYERS_PER_MATCH) {
+        throw new Error(
+          `Match ${match.matchId} reached maximum players (${this.MAX_PLAYERS_PER_MATCH}). ` +
+          `Cannot add player "${playerName}".`
+        )
+      }
+
       match.players[playerName] = {
         name: playerName,
         frags: 0,

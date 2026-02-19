@@ -1,4 +1,6 @@
 import { Weapon } from "../enum/weapon.enum"
+import { Award } from "../enum/award.enum"
+import { TeamName } from "../enum/team-name.enum"
 
 export interface ParsedPlayer {
     name: string
@@ -8,6 +10,8 @@ export interface ParsedPlayer {
     currentStreak: number
     longestStreak: number
     killTimestamps: Date[]
+    team?: TeamName
+    awards?: Award[]
 }
 
 export interface ParsedMatch {
