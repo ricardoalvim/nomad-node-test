@@ -10,11 +10,15 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger'
 import { UploadResult } from 'src/shared/interfaces/api.interfaces'
 import { Express } from 'express'
+import { ProcessLogUseCase } from '../../application/use-cases/process-log.use-case'
+import { ApiRoutes } from 'src/shared/api-routes'
 
 @ApiTags('Matches')
 @Controller('matches')
 export class MatchController {
-  @Post('upload')
+  constructor(private readonly processLogUseCase: ProcessLogUseCase) { }
+
+  @Post(ApiRoutes.MatchesUpload)
   @ApiOperation({ summary: 'Faz o upload do log do jogo para processamento' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -37,8 +41,11 @@ export class MatchController {
     )
     file: Express.Multer.File,
   ): Promise<UploadResult> {
+
+    await this.processLogUseCase.execute(file.buffer)
+
     return {
-      message: 'Arquivo recebido com sucesso!',
+      message: 'Arquivo processado e salvo com sucesso!',
       filename: file.originalname,
       size: file.size,
     }
