@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { LogParserService } from './log-parser.service'
 import { PlayerName } from 'src/shared/enum/player.enum'
 import { Weapon } from 'src/shared/enum/weapon.enum'
+import { Badge } from 'src/shared/enum/badge.enum'
 
 describe('LogParserService', () => {
   let service: LogParserService
@@ -109,5 +110,33 @@ describe('LogParserService', () => {
 
     // Matou amigo, frag fica -1
     expect(roman.frags).toBe(-1)
+  })
+
+  it('calcula badge RifleKing e Arsenal corretamente', () => {
+    const logContent = [
+      '23/04/2019 15:00:00 - New match 1 has started',
+      `23/04/2019 15:01:00 - Roman killed A using M16`,
+      `23/04/2019 15:02:00 - Roman killed B using AK47`,
+      `23/04/2019 15:03:00 - Roman killed C using KNIFE`,
+      '23/04/2019 15:05:00 - Match 1 has ended'
+    ].join('\n')
+
+    jest.restoreAllMocks() // limpando o mock do teste anterior
+    const matches = service.parseLogContent(logContent)
+    const roman = matches[0].players['Roman']
+
+    // Usou 3 armas diferentes, ganha Arsenal
+    expect((roman as any).badges).toContain(Badge.Arsenal)
+  })
+
+  it('deve retornar null para a arma mais usada se não houver armas na partida', () => {
+    const logContent = [
+      '23/04/2019 15:34:22 - New match 1 has started',
+      `23/04/2019 15:36:33 - <WORLD> killed Nick by DROWN`,
+      '23/04/2019 15:39:22 - Match 1 has ended'
+    ].join('\n')
+
+    const matches = service.parseLogContent(logContent)
+    expect(matches[0].winningWeapon).toBeNull()
   })
 })
