@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { ParsedMatch, ParsedPlayer } from 'src/shared/interfaces/match.interfaces'
 @Injectable()
 export class LogParserService {
-  // Regex para extrair a data e a ação principal da linha
   private readonly LINE_REGEX = /^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}) - (.*)$/
   private readonly MATCH_START_REGEX = /New match (\d+) has started/
   private readonly MATCH_END_REGEX = /Match (\d+) has ended/
@@ -15,7 +14,10 @@ export class LogParserService {
     let currentMatch: ParsedMatch | null = null
 
     for (const rawLine of lines) {
-      const lineMatch = rawLine.match(this.LINE_REGEX)
+      const line = rawLine.trim()
+      if (!line) continue
+
+      const lineMatch = line.match(this.LINE_REGEX)
       if (!lineMatch) continue
 
       const dateStr = lineMatch[1] // ex: 23/04/2019 15:36:04
