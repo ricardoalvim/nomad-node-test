@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { ParsedMatch, ParsedPlayer } from 'src/shared/interfaces/match.interfaces'
+import { Award } from 'src/shared/award.enum'
+import { Weapon } from 'src/shared/weapon.enum'
+
 @Injectable()
 export class LogParserService {
   private readonly LINE_REGEX = /^(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}) - (.*)$/
@@ -20,10 +23,9 @@ export class LogParserService {
       const lineMatch = line.match(this.LINE_REGEX)
       if (!lineMatch) continue
 
-      const dateStr = lineMatch[1] // ex: 23/04/2019 15:36:04
-      const action = lineMatch[2] // ex: Roman killed Nick using M16
+      const dateStr = lineMatch[1]
+      const action = lineMatch[2]
 
-      // 1. Início de Partida
       const startMatch = action.match(this.MATCH_START_REGEX)
       if (startMatch) {
         currentMatch = {
@@ -33,18 +35,16 @@ export class LogParserService {
         continue
       }
 
-      // Se não tem partida rolando, ignora as linhas
       if (!currentMatch) continue
 
-      // 2. Fim de Partida
       const endMatch = action.match(this.MATCH_END_REGEX)
       if (endMatch) {
+        this.enrichMatchData(currentMatch)
         matches.push(currentMatch)
         currentMatch = null
         continue
       }
 
-      // 3. Morte pelo Mundo (WORLD)
       const worldKillMatch = action.match(this.WORLD_KILL_REGEX)
       if (worldKillMatch) {
         const victimName = worldKillMatch[1]
@@ -52,11 +52,10 @@ export class LogParserService {
 
         const victim = currentMatch.players[victimName]
         victim.deaths += 1
-        victim.currentStreak = 0 // Zerou o streak porque morreu
+        victim.currentStreak = 0
         continue
       }
 
-      // 4. Morte entre Jogadores (Player kill)
       const playerKillMatch = action.match(this.PLAYER_KILL_REGEX)
       if (playerKillMatch) {
         const killerName = playerKillMatch[1]
@@ -69,26 +68,18 @@ export class LogParserService {
         const killer = currentMatch.players[killerName]
         const victim = currentMatch.players[victimName]
 
-        // Atualiza o Atirador
         if (killerName !== victimName) {
           killer.frags += 1
           killer.currentStreak += 1
           if (killer.currentStreak > killer.longestStreak) {
             killer.longestStreak = killer.currentStreak
           }
-
           killer.weapons[weapon] = (killer.weapons[weapon] || 0) + 1
-
-          // Guarda o timestamp para o cálculo de 5 kills / 1 min depois
-          // O formato DD/MM/YYYY HH:mm:ss precisa de parse correto no Date,
-          // mas vamos simplificar a string por enquanto.
           killer.killTimestamps.push(this.parseDate(dateStr))
         }
 
-        // Atualiza a Vítima
         victim.deaths += 1
         victim.currentStreak = 0
-
         continue
       }
     }
@@ -96,7 +87,60 @@ export class LogParserService {
     return matches
   }
 
-  // Helper para inicializar o jogador caso ele não exista no objeto da partida
+  private enrichMatchData(match: ParsedMatch): void {
+    match.winningWeapon = this.getWinningWeapon(match)
+
+    for (const playerName in match.players) {
+      const player = match.players[playerName]
+      const awards: string[] = []
+
+      if (player.deaths === 0 && player.frags > 0) {
+        awards.push(Award.Immortal)
+      }
+
+      if (this.hasFastKillsStreak(player.killTimestamps)) {
+        awards.push(Award.Rambo)
+      }
+      ; (player as any).awards = awards
+    }
+  }
+
+  private getWinningWeapon(match: ParsedMatch): Weapon | null {
+    let winner: ParsedPlayer | null = null
+    let maxFrags = -1
+
+    for (const playerName in match.players) {
+      const player = match.players[playerName]
+      if (player.frags > maxFrags) {
+        maxFrags = player.frags
+        winner = player
+      }
+    }
+
+    if (!winner || Object.keys(winner.weapons).length === 0) return null
+
+    let bestWeapon: string | null = null
+    let maxWeaponKills = -1
+
+    for (const weapon in winner.weapons) {
+      if (winner.weapons[weapon] > maxWeaponKills) {
+        maxWeaponKills = winner.weapons[weapon]
+        bestWeapon = weapon
+      }
+    }
+    return bestWeapon as Weapon | null
+  }
+
+  private hasFastKillsStreak(killTimestamps: Date[]): boolean {
+    if (killTimestamps.length < 5) return false
+    const sorted = [...killTimestamps].sort((a, b) => a.getTime() - b.getTime())
+    for (let i = 4; i < sorted.length; i++) {
+      const diff = sorted[i].getTime() - sorted[i - 4].getTime()
+      if (diff <= 60000) return true
+    }
+    return false
+  }
+
   private ensurePlayerExists(match: ParsedMatch, playerName: string) {
     if (!match.players[playerName]) {
       match.players[playerName] = {
@@ -111,7 +155,6 @@ export class LogParserService {
     }
   }
 
-  // Helper simples para converter a data do log para objeto Date do JS
   private parseDate(dateStr: string): Date {
     const [datePart, timePart] = dateStr.split(' ')
     const [day, month, year] = datePart.split('/')
