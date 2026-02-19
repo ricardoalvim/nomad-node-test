@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { MatchRepository } from '../../domain/repositories/match.repository'
+import { MatchRankingDto, PlayerRanking } from 'src/shared/interfaces/match.interfaces'
+import { MatchEntity } from '../../infra/persistence/match.schema'
 
 @Injectable()
 export class GetMatchRankingUseCase {
-  constructor(private readonly matchRepository: MatchRepository) {}
+  constructor(private readonly matchRepository: MatchRepository) { }
 
-  async execute(matchId: string) {
-    const match = await this.matchRepository.findById(matchId)
+  async execute(matchId: string): Promise<MatchRankingDto> {
+    const match: MatchEntity | null = await this.matchRepository.findById(matchId)
 
     if (!match) {
       throw new NotFoundException(`Partida ${matchId} não encontrada`)
@@ -19,8 +21,7 @@ export class GetMatchRankingUseCase {
       ranking: this.formatRanking(match.players),
     }
   }
-
-  private formatRanking(playersMap: any) {
+  private formatRanking(playersMap: Map<string, any>): PlayerRanking[] {
     const players = Array.from(playersMap.values())
 
     // Ordena do maior matador para o menor
@@ -32,6 +33,6 @@ export class GetMatchRankingUseCase {
         deaths: p.deaths,
         longestStreak: p.longestStreak,
         awards: p.awards,
-      }))
+      })) as PlayerRanking[]
   }
 }

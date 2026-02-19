@@ -2,6 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ProcessLogUseCase } from './process-log.use-case'
 import { LogParserService } from '../services/log-parser.service'
 import { MatchRepository } from '../../domain/repositories/match.repository'
+import { PlayerName } from 'src/shared/player.enum'
+import { Weapon } from 'src/shared/weapon.enum'
+import { Award } from 'src/shared/award.enum'
 
 describe('ProcessLogUseCase', () => {
   let useCase: ProcessLogUseCase
@@ -40,11 +43,11 @@ describe('ProcessLogUseCase', () => {
       {
         matchId: '111',
         players: {
-          Roman: {
-            name: 'Roman',
+          [PlayerName.Roman]: {
+            name: PlayerName.Roman,
             frags: 3,
             deaths: 0, // Zero mortes = Imortal
-            weapons: { M16: 2, AK47: 1 }, // Arma vencedora deve ser M16
+            weapons: { [Weapon.M16]: 2, [Weapon.AK47]: 1 }, // Arma vencedora deve ser M16
             currentStreak: 3,
             longestStreak: 3,
             killTimestamps: [
@@ -53,8 +56,8 @@ describe('ProcessLogUseCase', () => {
               new Date('2020-01-01T10:10:00Z'),
             ],
           },
-          Nick: {
-            name: 'Nick',
+          [PlayerName.Nick]: {
+            name: PlayerName.Nick,
             frags: 0,
             deaths: 3,
             weapons: {},
@@ -75,9 +78,9 @@ describe('ProcessLogUseCase', () => {
     // Inspecionamos os argumentos que o UseCase mandou para o repository.save()
     const [savedMatch, winningWeapon] = repository.save.mock.calls[0]
 
-    expect(winningWeapon).toBe('M16')
-    expect((savedMatch.players['Roman'] as any).awards).toContain('Imortal')
-    expect((savedMatch.players['Nick'] as any).awards).toHaveLength(0)
+    expect(winningWeapon).toBe(Weapon.M16)
+    expect((savedMatch.players[PlayerName.Roman] as any).awards).toContain(Award.Immortal)
+    expect((savedMatch.players[PlayerName.Nick] as any).awards).toHaveLength(0)
   })
 
   it('deve aplicar o award Rambo para 5 kills em menos de 1 minuto', async () => {
@@ -87,8 +90,8 @@ describe('ProcessLogUseCase', () => {
       {
         matchId: '222',
         players: {
-          Roman: {
-            name: 'Roman',
+          [PlayerName.Roman]: {
+            name: PlayerName.Roman,
             frags: 5,
             deaths: 0,
             weapons: { M16: 5 },
@@ -111,7 +114,7 @@ describe('ProcessLogUseCase', () => {
     const [savedMatch] = repository.save.mock.calls[0]
 
     // O Roman estava com a corda toda, tem que ganhar os dois prêmios
-    expect((savedMatch.players['Roman'] as any).awards).toContain('Rambo')
-    expect((savedMatch.players['Roman'] as any).awards).toContain('Imortal')
+    expect((savedMatch.players[PlayerName.Roman] as any).awards).toContain(Award.Rambo)
+    expect((savedMatch.players[PlayerName.Roman] as any).awards).toContain(Award.Immortal)
   })
 })

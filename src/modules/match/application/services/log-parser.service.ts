@@ -1,21 +1,5 @@
 import { Injectable } from '@nestjs/common'
-
-// Interfaces locais para tipar o retorno provisório antes de ir pro banco
-export interface ParsedPlayer {
-  name: string
-  frags: number
-  deaths: number
-  weapons: Record<string, number>
-  currentStreak: number
-  longestStreak: number
-  killTimestamps: Date[]
-}
-
-export interface ParsedMatch {
-  matchId: string
-  players: Record<string, ParsedPlayer>
-}
-
+import { ParsedMatch, ParsedPlayer } from 'src/shared/interfaces/match.interfaces'
 @Injectable()
 export class LogParserService {
   // Regex para extrair a data e a ação principal da linha

@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { LogParserService, ParsedMatch } from '../services/log-parser.service'
+import { LogParserService } from '../services/log-parser.service'
+import { ParsedMatch } from 'src/shared/interfaces/match.interfaces'
+import { Weapon } from 'src/shared/weapon.enum'
+import { Award } from 'src/shared/award.enum'
 import { MatchRepository } from '../../domain/repositories/match.repository'
 
 @Injectable()
@@ -27,11 +30,11 @@ export class ProcessLogUseCase {
       const awards: string[] = []
 
       if (player.deaths === 0 && player.frags > 0) {
-        awards.push('Imortal')
+        awards.push(Award.Immortal)
       }
 
       if (this.hasFastKillsStreak(player.killTimestamps)) {
-        awards.push('Rambo')
+        awards.push(Award.Rambo)
       }
 
       ; (player as any).awards = awards
@@ -53,7 +56,7 @@ export class ProcessLogUseCase {
     return false
   }
 
-  private getWinningWeapon(match: ParsedMatch): string | null {
+  private getWinningWeapon(match: ParsedMatch): Weapon | null {
     let winner = null
     let maxFrags = -1
 
@@ -67,13 +70,13 @@ export class ProcessLogUseCase {
 
     if (!winner || Object.keys(winner.weapons).length === 0) return null
 
-    let bestWeapon = null
+    let bestWeapon: Weapon | null = null
     let maxWeaponKills = -1
 
     for (const weapon in winner.weapons) {
       if (winner.weapons[weapon] > maxWeaponKills) {
         maxWeaponKills = winner.weapons[weapon]
-        bestWeapon = weapon
+        bestWeapon = weapon as Weapon
       }
     }
 

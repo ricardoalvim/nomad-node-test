@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { NotFoundException } from '@nestjs/common'
 import { GetMatchRankingUseCase } from './get-match-ranking.use-case'
 import { MatchRepository } from '../../domain/repositories/match.repository'
+import { Weapon } from 'src/shared/weapon.enum'
+import { Award } from 'src/shared/award.enum'
 
 describe('GetMatchRankingUseCase', () => {
   let useCase: GetMatchRankingUseCase
@@ -26,10 +28,10 @@ describe('GetMatchRankingUseCase', () => {
     // Mockamos o retorno do banco com jogadores fora de ordem
     repository.findById.mockResolvedValue({
       matchId: '123',
-      winningWeapon: 'AK47',
+      winningWeapon: Weapon.AK47,
       players: new Map([
         ['Noob', { name: 'Noob', frags: 1, deaths: 10, longestStreak: 1, awards: [] }],
-        ['Pro', { name: 'Pro', frags: 20, deaths: 0, longestStreak: 15, awards: ['Imortal'] }],
+        ['Pro', { name: 'Pro', frags: 20, deaths: 0, longestStreak: 15, awards: [Award.Immortal] }],
         ['Mid', { name: 'Mid', frags: 10, deaths: 5, longestStreak: 3, awards: [] }],
       ]),
     } as any)
@@ -38,7 +40,7 @@ describe('GetMatchRankingUseCase', () => {
 
     expect(repository.findById).toHaveBeenCalledWith('123')
     expect(result.matchId).toBe('123')
-    expect(result.winnerWeapon).toBe('AK47')
+    expect(result.winnerWeapon).toBe(Weapon.AK47)
 
     // O Pro tem que ser o primeiro (index 0) e o Noob o último (index 2)
     expect(result.ranking).toHaveLength(3)
