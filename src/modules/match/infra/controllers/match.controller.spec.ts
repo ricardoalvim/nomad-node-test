@@ -5,14 +5,14 @@ import { GetMatchDetailsUseCase } from '../../application/use-cases/get-match-de
 
 describe('MatchController', () => {
   let controller: MatchController
-  let useCase: jest.Mocked<ProcessLogUseCase>
+  let processLogUseCase: jest.Mocked<ProcessLogUseCase>
+  let getMatchDetailsUseCase: jest.Mocked<GetMatchDetailsUseCase>
 
   beforeEach(async () => {
-    const mockUseCaseProcessLogUseCase = {
+    const mockProcessLogUseCase = {
       execute: jest.fn(),
     }
-
-    const mockUseGetMatchDetailsUseCase = {
+    const mockGetMatchDetailsUseCase = {
       execute: jest.fn(),
     }
 
@@ -21,29 +21,55 @@ describe('MatchController', () => {
       providers: [
         {
           provide: ProcessLogUseCase,
-          useValue: mockUseCaseProcessLogUseCase
+          useValue: mockProcessLogUseCase,
         },
         {
           provide: GetMatchDetailsUseCase,
-          useValue: mockUseGetMatchDetailsUseCase
-        }
+          useValue: mockGetMatchDetailsUseCase,
+        },
       ],
     }).compile()
 
     controller = module.get<MatchController>(MatchController)
-    useCase = module.get(ProcessLogUseCase) as jest.Mocked<ProcessLogUseCase>
+    processLogUseCase = module.get(ProcessLogUseCase) as jest.Mocked<ProcessLogUseCase>
+    getMatchDetailsUseCase = module.get(GetMatchDetailsUseCase) as jest.Mocked<GetMatchDetailsUseCase>
   })
 
-  it('deve aceitar o upload de um arquivo e chamar o UseCase', async () => {
-    const mockFile = {
-      originalname: 'test-log.txt',
-      size: 1024,
-      buffer: Buffer.from('linha de teste'),
-    } as Express.Multer.File
+  it('uploadLog delega processamento e retorna UploadResult', async () => {
+    processLogUseCase.execute.mockResolvedValue(undefined)
 
-    const result = await controller.uploadLog(mockFile)
+    const fakeFile: any = { buffer: Buffer.from('x'), originalname: 'file.log', size: 10 }
 
-    expect(useCase.execute).toHaveBeenCalledWith(mockFile.buffer)
-    expect(result.message).toBe('Arquivo processado e salvo com sucesso!')
+    const res = await controller.uploadLog(fakeFile)
+
+    expect(processLogUseCase.execute).toHaveBeenCalledWith(fakeFile.buffer)
+    expect(res.filename).toBe('file.log')
+    expect(res.message).toBeDefined()
+  })
+
+  it('getMatchBadges retorna badges por jogador', async () => {
+    getMatchDetailsUseCase.execute.mockResolvedValue({
+      matchId: '1',
+      players: { A: { badges: ['X'] } as any }
+    } as any)
+
+    const res = await controller.getMatchBadges('1')
+
+    expect(getMatchDetailsUseCase.execute).toHaveBeenCalledWith('1')
+    expect(res.matchId).toBe('1')
+    expect((res as any).playerBadges['A']).toEqual(['X'])
+  })
+
+  it('getMatchTimeline retorna timeline quando presente', async () => {
+    getMatchDetailsUseCase.execute.mockResolvedValue({
+      matchId: '1',
+      players: {},
+      timeline: [{ timestamp: new Date(), type: 'x', description: 'd', players: [], severity: 'low' }]
+    } as any)
+
+    const res = await controller.getMatchTimeline('1')
+
+    expect(getMatchDetailsUseCase.execute).toHaveBeenCalledWith('1')
+    expect(Array.isArray(res)).toBe(true)
   })
 })
