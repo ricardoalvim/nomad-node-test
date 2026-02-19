@@ -6,27 +6,13 @@ describe('PlayerComparisonService', () => {
     let service: PlayerComparisonService
     let matchRepository: jest.Mocked<MatchRepository>
 
-    const makeMatch = (p1Name: string, p2Name: string, p1Frags = 1, p2Frags = 0) => ({
-        players: {
-            [p1Name]: { frags: p1Frags, deaths: 0, longestStreak: 1, weapons: { AK: p1Frags } },
-            [p2Name]: { frags: p2Frags, deaths: 0, longestStreak: 0, weapons: { M16: p2Frags } },
-        },
-    })
-
     beforeEach(async () => {
-        const mockRepository = {
-            findAll: jest.fn(),
-            save: jest.fn(),
-            findById: jest.fn(),
-        }
+        const mockRepository = { findAll: jest.fn(), save: jest.fn(), findById: jest.fn() }
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 PlayerComparisonService,
-                {
-                    provide: MatchRepository,
-                    useValue: mockRepository,
-                },
+                { provide: MatchRepository, useValue: mockRepository },
             ],
         }).compile()
 
@@ -36,26 +22,41 @@ describe('PlayerComparisonService', () => {
 
     it('retorna valores zero quando não há partidas em comum', async () => {
         matchRepository.findAll.mockResolvedValue([])
-
         const res = await service.compareHeadToHead('A', 'B')
-
-        expect(res.matches_played_together).toBe(0)
-        expect(res.player1.frags).toBe(0)
         expect(res.prediction).toBe('tie')
+        expect(res.matches_played_together).toBe(0)
     })
 
-    it('calcula estatísticas básicas quando há partidas em comum', async () => {
+    it('calcula estatísticas, advantages e prediction corretamente', async () => {
         matchRepository.findAll.mockResolvedValue([
-            makeMatch('A', 'B', 3, 1) as any,
-            makeMatch('A', 'B', 2, 4) as any,
+            {
+                players: {
+                    A: { frags: 10, deaths: 2, longestStreak: 5, weapons: { M16: 10 } },
+                    B: { frags: 2, deaths: 10, longestStreak: 1, weapons: { AK47: 2 } }
+                }
+            } as any
         ])
 
         const res = await service.compareHeadToHead('A', 'B')
 
-        expect(res.matches_played_together).toBe(2)
-        expect(res.player1.frags).toBe(5)
-        expect(res.player2.frags).toBe(5)
-        expect(['player1', 'player2', 'tie']).toContain(res.prediction)
-        expect(typeof res.confidence).toBe('number')
+        expect(res.matches_played_together).toBe(1)
+        expect(res.player1.frags).toBe(10)
+        expect(res.player1.win_rate).toBe(1)
+        expect(res.prediction).toBe('player1')
+        expect(res.confidence).toBeGreaterThan(0)
+    })
+
+    it('prediction favorece player2 se os status dele forem maiores', async () => {
+        matchRepository.findAll.mockResolvedValue([
+            {
+                players: {
+                    A: { frags: 1, deaths: 10, longestStreak: 1, weapons: { M16: 1 } },
+                    B: { frags: 15, deaths: 1, longestStreak: 8, weapons: { AK47: 15 } }
+                }
+            } as any
+        ])
+
+        const res = await service.compareHeadToHead('A', 'B')
+        expect(res.prediction).toBe('player2')
     })
 })
