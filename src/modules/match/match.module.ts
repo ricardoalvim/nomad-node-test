@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { MatchController } from './infra/controllers/match.controller'
 import { AnalyticsController } from './infra/controllers/analytics.controller'
-import { MatchEntity, MatchSchema } from './infra/persistence/match.schema'
+import { MatchSchema } from './infra/persistence/match.schema'
 import { MatchRepository } from './domain/repositories/match.repository'
 import { MatchMongooseRepository } from './infra/repositories/match-mongoose.repository'
 import { LogParserService } from './application/services/log-parser.service'
@@ -11,6 +11,7 @@ import { GetMatchRankingUseCase } from './application/use-cases/get-match-rankin
 import { GetMatchDetailsUseCase } from './application/use-cases/get-match-details.use-case'
 import { PlayerComparisonService } from './application/services/player-comparison.service'
 import { GetPlayerComparisonUseCase } from './application/use-cases/get-player-comparison.use-case'
+import { MatchEntity } from './infra/persistence/model/match.model'
 
 /* 
   O MatchModule é o módulo central que orquestra toda a funcionalidade relacionada às partidas. 

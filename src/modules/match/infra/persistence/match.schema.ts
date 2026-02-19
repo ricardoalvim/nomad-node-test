@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { SchemaFactory } from '@nestjs/mongoose'
 import { PlayerStats } from './model/player.stats.model'
 import { MatchEntity } from './model/match.model'
 

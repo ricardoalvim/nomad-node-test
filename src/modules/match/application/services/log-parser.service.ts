@@ -3,6 +3,7 @@ import { ParsedMatch, ParsedPlayer, TimelineEvent, TimelineEventType } from 'src
 import { Award } from 'src/shared/enum/award.enum'
 import { Badge } from 'src/shared/enum/badge.enum'
 import { Weapon } from 'src/shared/enum/weapon.enum'
+import { PlayerName } from 'src/shared/enum/player.enum'
 
 @Injectable()
 export class LogParserService {
@@ -166,24 +167,23 @@ export class LogParserService {
    * @throws Error if trying to add player when match has 20+ players
    */
   private ensurePlayerExists(match: ParsedMatch, playerName: string): void {
-    if (!match.players[playerName]) {
-      // Validate the 20-player limit before adding
-      if (Object.keys(match.players).length >= this.MAX_PLAYERS_PER_MATCH) {
-        throw new Error(
-          `Match ${match.matchId} reached maximum players (${this.MAX_PLAYERS_PER_MATCH}). ` +
-          `Cannot add player "${playerName}".`
-        )
-      }
+    if (match.players[playerName]) return;
 
-      match.players[playerName] = {
-        name: playerName,
-        frags: 0,
-        deaths: 0,
-        weapons: {},
-        currentStreak: 0,
-        longestStreak: 0,
-        killTimestamps: [],
-      }
+    const currentPlayersCount = Object.keys(match.players).filter(p => p !== PlayerName.World).length;
+
+    if (currentPlayersCount >= 20 && playerName !== PlayerName.World) {
+      // Limited up to 20. We ignore 21th player
+      return;
+    }
+
+    match.players[playerName] = {
+      name: playerName,
+      frags: 0,
+      deaths: 0,
+      weapons: {},
+      currentStreak: 0,
+      longestStreak: 0,
+      killTimestamps: [],
     }
   }
 
