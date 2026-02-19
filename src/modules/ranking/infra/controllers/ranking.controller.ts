@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common'
 import { ApiTags, ApiOperation } from '@nestjs/swagger'
 import { GlobalRankingService } from '../../application/services/global-ranking.service'
-import { GlobalPlayerRanking } from 'src/shared/interfaces/match.interfaces'
-import { ApiRoutes } from 'src/shared/api-routes'
+import { ApiRoutes } from 'src/shared/enum/api-routes.enum'
+import { GlobalPlayerRanking } from 'src/shared/interfaces/ranking.interface'
 
 @ApiTags('Ranking')
 @Controller()

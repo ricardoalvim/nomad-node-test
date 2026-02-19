@@ -11,7 +11,7 @@ import { ApiTags, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger'
 import { UploadResult } from 'src/shared/interfaces/api.interfaces'
 import { Express } from 'express'
 import { ProcessLogUseCase } from '../../application/use-cases/process-log.use-case'
-import { ApiRoutes } from 'src/shared/api-routes'
+import { ApiRoutes } from 'src/shared/enum/api-routes.enum'
 
 @ApiTags('Matches')
 @Controller('matches')

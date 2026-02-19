@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ParsedMatch, ParsedPlayer } from 'src/shared/interfaces/match.interfaces'
-import { Award } from 'src/shared/award.enum'
-import { Weapon } from 'src/shared/weapon.enum'
+import { Award } from 'src/shared/enum/award.enum'
+import { Weapon } from 'src/shared/enum/weapon.enum'
 
 @Injectable()
 export class LogParserService {

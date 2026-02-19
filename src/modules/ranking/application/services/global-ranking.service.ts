@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
 import { REDIS_CLIENT } from 'src/infra/cache/redis-cache.module'
-import { GlobalPlayerRanking } from 'src/shared/interfaces/match.interfaces'
-import { PlayerName } from 'src/shared/player.enum'
+import { PlayerName } from 'src/shared/enum/player.enum'
+import { GlobalPlayerRanking } from 'src/shared/interfaces/ranking.interface'
 
 @Injectable()
 export class GlobalRankingService {

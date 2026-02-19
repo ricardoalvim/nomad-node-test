@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { NotFoundException } from '@nestjs/common'
 import { GetMatchRankingUseCase } from './get-match-ranking.use-case'
 import { MatchRepository } from '../../domain/repositories/match.repository'
-import { Weapon } from 'src/shared/weapon.enum'
-import { Award } from 'src/shared/award.enum'
+import { Weapon } from 'src/shared/enum/weapon.enum'
+import { Award } from 'src/shared/enum/award.enum'
 
 describe('GetMatchRankingUseCase', () => {
   let useCase: GetMatchRankingUseCase

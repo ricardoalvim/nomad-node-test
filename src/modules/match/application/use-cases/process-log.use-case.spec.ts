@@ -3,9 +3,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter'
 import { ProcessLogUseCase } from './process-log.use-case'
 import { LogParserService } from '../services/log-parser.service'
 import { MatchRepository } from '../../domain/repositories/match.repository'
-import { PlayerName } from 'src/shared/player.enum'
-import { Weapon } from 'src/shared/weapon.enum'
-import { Award } from 'src/shared/award.enum'
+import { PlayerName } from 'src/shared/enum/player.enum'
+import { Weapon } from 'src/shared/enum/weapon.enum'
+import { Award } from 'src/shared/enum/award.enum'
 
 describe('ProcessLogUseCase', () => {
   let useCase: ProcessLogUseCase
