@@ -1,5 +1,5 @@
 import { ParsedMatch } from 'src/shared/interfaces/match.interfaces'
-import { MatchEntity } from '../../infra/persistence/match.schema'
+import { MatchEntity } from '../../infra/persistence/model/match.model'
 
 export abstract class MatchRepository {
   abstract save(match: ParsedMatch): Promise<void>

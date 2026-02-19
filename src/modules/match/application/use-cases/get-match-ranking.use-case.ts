@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { MatchRepository } from '../../domain/repositories/match.repository'
 import { MatchRankingDto, PlayerRanking } from 'src/shared/interfaces/match.interfaces'
-import { MatchEntity } from '../../infra/persistence/match.schema'
+import { MatchEntity } from '../../infra/persistence/model/match.model'
 
 @Injectable()
 export class GetMatchRankingUseCase {
