@@ -79,6 +79,8 @@
         "testEnvironment": "node",
         "coveragePathIgnorePatterns": [
             ".module.ts",
+            ".model.ts",
+            ".enum.ts",
             ".schema.ts",
             "main.ts",
             ".repository.ts"

@@ -1,3 +1,7 @@
+import { Weapon } from "../enum/weapon.enum"
+import { Award } from "../enum/award.enum"
+import { TeamName } from "../enum/team-name.enum"
+
 export interface ParsedPlayer {
     name: string
     frags: number
@@ -6,31 +10,12 @@ export interface ParsedPlayer {
     currentStreak: number
     longestStreak: number
     killTimestamps: Date[]
+    team?: TeamName
+    awards?: Award[]
 }
 
 export interface ParsedMatch {
     matchId: string
     players: Record<string, ParsedPlayer>
-}
-
-export interface PlayerStatsDto {
-    name: string
-    frags: number
-    deaths: number
-    longestStreak: number
-    awards: string[]
-}
-
-export interface PlayerRanking {
-    name: string
-    frags: number
-    deaths: number
-    longestStreak: number
-    awards: string[]
-}
-
-export interface MatchRankingDto {
-    matchId: string
-    winnerWeapon: string | null
-    ranking: PlayerRanking[]
+    winningWeapon?: Weapon | null
 }

@@ -3,24 +3,20 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { ParsedMatch } from 'src/shared/interfaces/match.interfaces'
 import { MatchRepository } from 'src/modules/match/domain/repositories/match.repository'
-import { Weapon } from 'src/shared/weapon.enum'
 import { MatchEntity } from 'src/modules/match/infra/persistence/match.schema'
 
 @Injectable()
 export class MatchMongooseRepository implements MatchRepository {
   constructor(@InjectModel(MatchEntity.name) private readonly matchModel: Model<MatchEntity>) { }
 
-  async save(match: ParsedMatch, winningWeapon: Weapon | null): Promise<void> {
-    await this.matchModel.findOneAndUpdate(
-      { matchId: match.matchId },
-      {
-        matchId: match.matchId,
-        startTime: new Date(),
-        players: match.players,
-        winningWeapon,
-      },
-      { upsert: true, new: true },
-    )
+  async save(match: ParsedMatch): Promise<void> {
+    const entity = new this.matchModel({
+      matchId: match.matchId,
+      players: match.players,
+      winningWeapon: match.winningWeapon || null
+    })
+
+    await entity.save()
   }
 
   async findById(matchId: string): Promise<MatchEntity | null> {
