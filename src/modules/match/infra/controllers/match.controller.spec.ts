@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { MatchController } from './match.controller'
 import { ProcessLogUseCase } from '../../application/use-cases/process-log.use-case'
 import { GetMatchDetailsUseCase } from '../../application/use-cases/get-match-details.use-case'
+import { Badge } from 'src/shared/enum/badge.enum'
 
 describe('MatchController', () => {
   let controller: MatchController
@@ -71,5 +72,46 @@ describe('MatchController', () => {
 
     expect(getMatchDetailsUseCase.execute).toHaveBeenCalledWith('1')
     expect(Array.isArray(res)).toBe(true)
+  })
+
+  it('uploadLog delega processamento e retorna UploadResult', async () => {
+    processLogUseCase.execute.mockResolvedValue(undefined)
+    const fakeFile: any = { buffer: Buffer.from('x'), originalname: 'file.log', size: 10 }
+
+    const res = await controller.uploadLog(fakeFile)
+    expect(processLogUseCase.execute).toHaveBeenCalledWith(fakeFile.buffer)
+    expect(res.filename).toBe('file.log')
+  })
+
+  it('getMatchDetails retorna detalhes do caso de uso', async () => {
+    const fakeMatch: any = { matchId: '123', players: {} }
+    getMatchDetailsUseCase.execute.mockResolvedValue(fakeMatch)
+
+    const res = await controller.getMatchDetails('123')
+    expect(getMatchDetailsUseCase.execute).toHaveBeenCalledWith('123')
+    expect(res).toEqual(fakeMatch)
+  })
+
+  it('getMatchBadges retorna as badges por jogador', async () => {
+    getMatchDetailsUseCase.execute.mockResolvedValue({
+      matchId: '123',
+      players: { Roman: { badges: [Badge.Flawless] as any } }
+    } as any)
+
+    const res = await controller.getMatchBadges('123')
+    expect(res.matchId).toBe('123')
+    expect(res.playerBadges['Roman']).toEqual([Badge.Flawless])
+  })
+
+  it('getMatchTimeline retorna a timeline quando presente', async () => {
+    getMatchDetailsUseCase.execute.mockResolvedValue({
+      matchId: '123',
+      players: {},
+      timeline: [{ description: 'First Blood' }]
+    } as any)
+
+    const res = await controller.getMatchTimeline('123')
+    expect(res).toHaveLength(1)
+    expect(res[0].description).toBe('First Blood')
   })
 })
