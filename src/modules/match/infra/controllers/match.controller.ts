@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger'
+import { UploadResult } from 'src/shared/interfaces/api.interfaces'
 import { Express } from 'express'
 
 @ApiTags('Matches')
@@ -35,7 +36,7 @@ export class MatchController {
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file: Express.Multer.File,
-  ) {
+  ): Promise<UploadResult> {
     return {
       message: 'Arquivo recebido com sucesso!',
       filename: file.originalname,
