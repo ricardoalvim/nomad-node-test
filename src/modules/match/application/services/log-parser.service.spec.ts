@@ -87,4 +87,27 @@ describe('LogParserService', () => {
     expect(roman.deaths).toBe(1)
     expect(roman.longestStreak).toBe(3)
   })
+
+  it('deve subtrair frag em caso de friendly fire (mesmo time)', () => {
+    // Simulando que Roman e Marcus são do mesmo time pelo formato do texto lido
+    // Para testar isso limpo, a gente intercepta o objeto antes do loop final
+    const logContent = [
+      '23/04/2019 15:00:00 - New match 1 has started',
+      `23/04/2019 15:01:00 - Roman killed Marcus using M16`,
+      '23/04/2019 15:05:00 - Match 1 has ended'
+    ].join('\n')
+
+    // Sobrescrevendo o comportamento para injetar o time artificialmente e testar o IF
+    jest.spyOn(service as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
+      if (!match.players[name]) {
+        match.players[name] = { name, frags: 0, deaths: 0, weapons: {}, currentStreak: 0, longestStreak: 0, killTimestamps: [], team: 'Red' }
+      }
+    })
+
+    const matches = service.parseLogContent(logContent)
+    const roman = matches[0].players['Roman']
+
+    // Matou amigo, frag fica -1
+    expect(roman.frags).toBe(-1)
+  })
 })
