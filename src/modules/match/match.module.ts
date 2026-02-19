@@ -6,15 +6,13 @@ import { MatchRepository } from './domain/repositories/match.repository'
 import { MatchMongooseRepository } from './infra/repositories/match-mongoose.repository'
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([{ name: MatchEntity.name, schema: MatchSchema }])
-    ],
-    providers: [
-        {
-            provide: MatchRepository,
-            useClass: MatchMongooseRepository,
-        },
-    ],
-    controllers: [MatchController],
+  imports: [MongooseModule.forFeature([{ name: MatchEntity.name, schema: MatchSchema }])],
+  providers: [
+    {
+      provide: MatchRepository,
+      useClass: MatchMongooseRepository,
+    },
+  ],
+  controllers: [MatchController],
 })
-export class MatchModule { }
+export class MatchModule {}
