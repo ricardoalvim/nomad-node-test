@@ -15,25 +15,3 @@ export interface ParsedMatch {
     players: Record<string, ParsedPlayer>
     winningWeapon?: Weapon | null
 }
-
-export interface PlayerStatsDto {
-    name: string
-    frags: number
-    deaths: number
-    longestStreak: number
-    awards: string[]
-}
-
-export interface PlayerRanking {
-    name: string
-    frags: number
-    deaths: number
-    longestStreak: number
-    awards: string[]
-}
-
-export interface MatchRankingDto {
-    matchId: string
-    winnerWeapon: string | null
-    ranking: PlayerRanking[]
-}

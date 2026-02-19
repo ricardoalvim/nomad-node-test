@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { MatchRepository } from '../../domain/repositories/match.repository'
-import { MatchRankingDto, PlayerRanking } from 'src/shared/interfaces/match.interfaces'
 import { MatchEntity } from '../../infra/persistence/model/match.model'
+import { PlayerRanking } from 'src/shared/interfaces/player.interface'
+import { MatchRankingDto } from 'src/shared/interfaces/ranking.interface'
+import { MatchRepository } from '../../domain/repositories/match.repository'
 
 @Injectable()
 export class GetMatchRankingUseCase {
@@ -14,7 +15,6 @@ export class GetMatchRankingUseCase {
       throw new NotFoundException(`Partida ${matchId} não encontrada`)
     }
 
-    // Aqui você pode formatar o retorno exatamente como a view precisa
     return {
       matchId: match.matchId,
       winnerWeapon: match.winningWeapon,
@@ -24,7 +24,6 @@ export class GetMatchRankingUseCase {
   private formatRanking(playersMap: Map<string, any>): PlayerRanking[] {
     const players = Array.from(playersMap.values())
 
-    // Ordena do maior matador para o menor
     return players
       .sort((a: any, b: any) => b.frags - a.frags)
       .map((p: any) => ({
