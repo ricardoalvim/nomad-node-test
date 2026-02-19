@@ -1,19 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { MatchController } from './match.controller'
 import { ProcessLogUseCase } from '../../application/use-cases/process-log.use-case'
+import { GetMatchDetailsUseCase } from '../../application/use-cases/get-match-details.use-case'
 
 describe('MatchController', () => {
   let controller: MatchController
   let useCase: jest.Mocked<ProcessLogUseCase>
 
   beforeEach(async () => {
-    const mockUseCase = {
+    const mockUseCaseProcessLogUseCase = {
+      execute: jest.fn(),
+    }
+
+    const mockUseGetMatchDetailsUseCase = {
       execute: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MatchController],
-      providers: [{ provide: ProcessLogUseCase, useValue: mockUseCase }],
+      providers: [
+        {
+          provide: ProcessLogUseCase,
+          useValue: mockUseCaseProcessLogUseCase
+        },
+        {
+          provide: GetMatchDetailsUseCase,
+          useValue: mockUseGetMatchDetailsUseCase
+        }
+      ],
     }).compile()
 
     controller = module.get<MatchController>(MatchController)

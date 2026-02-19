@@ -36,4 +36,4 @@ import { GetPlayerComparisonUseCase } from './application/use-cases/get-player-c
   ],
   controllers: [MatchController, AnalyticsController],
 })
-export class MatchModule {}
+export class MatchModule { }
