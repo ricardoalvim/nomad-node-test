@@ -12,7 +12,7 @@ export class GetMatchRankingUseCase {
     const match: MatchEntity | null = await this.matchRepository.findById(matchId)
 
     if (!match) {
-      throw new NotFoundException(`Partida ${matchId} não encontrada`)
+      throw new NotFoundException(`Match ${matchId} not found`)
     }
 
     return {
