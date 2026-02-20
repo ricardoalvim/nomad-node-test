@@ -4,16 +4,26 @@ import { PlayerName } from 'src/shared/enum/player.enum'
 import { Weapon } from 'src/shared/enum/weapon.enum'
 import { Badge } from 'src/shared/enum/badge.enum'
 import { TimelineEventType } from 'src/shared/interfaces/match.interfaces'
+import { BadgeEngine } from '../../engines/badge.engine'
+import { MatchStateManager } from '../../engines/match-state.manager'
+import { TimelineEngine } from '../../engines/timeline.engine'
 
 describe('LogParserService', () => {
   let service: LogParserService
+  let stateManager: MatchStateManager
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LogParserService],
+      providers: [
+        LogParserService,
+        BadgeEngine,
+        TimelineEngine,
+        MatchStateManager,
+      ],
     }).compile()
 
     service = module.get<LogParserService>(LogParserService)
+    stateManager = module.get<MatchStateManager>(MatchStateManager)
   })
 
   it('should be defined', () => {
@@ -100,9 +110,13 @@ describe('LogParserService', () => {
     ].join('\n')
 
     // Mocking to inject team artificially and test the IF
-    jest.spyOn(service as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
+    jest.spyOn(stateManager as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
       if (!match.players[name]) {
-        match.players[name] = { name, frags: 0, deaths: 0, weapons: {}, currentStreak: 0, longestStreak: 0, killTimestamps: [], team: 'Red' }
+        match.players[name] = {
+          name, frags: 0, deaths: 0, weapons: {},
+          currentStreak: 0, longestStreak: 0,
+          killTimestamps: [], team: 'Red'
+        }
       }
     })
 
