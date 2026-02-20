@@ -7,13 +7,13 @@ import { MatchEntity } from '../persistence/model/match.model'
 
 @Injectable()
 export class MatchMongooseRepository implements MatchRepository {
-  constructor(@InjectModel(MatchEntity.name) private readonly matchModel: Model<MatchEntity>) { }
+  constructor(@InjectModel(MatchEntity.name) private readonly matchModel: Model<MatchEntity>) {}
 
   async save(match: ParsedMatch): Promise<void> {
     const entity = new this.matchModel({
       matchId: match.matchId,
       players: match.players,
-      winningWeapon: match.winningWeapon || null
+      winningWeapon: match.winningWeapon || null,
     })
 
     await entity.save()

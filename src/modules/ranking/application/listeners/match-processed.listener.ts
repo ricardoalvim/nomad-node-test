@@ -5,13 +5,13 @@ import { GlobalRankingService } from '../services/global-ranking.service'
 
 @Injectable()
 export class MatchProcessedListener {
-    constructor(private readonly globalRankingService: GlobalRankingService) { }
+  constructor(private readonly globalRankingService: GlobalRankingService) {}
 
-    @OnEvent('match.processed')
-    async handleMatchProcessed(match: ParsedMatch) {
-        for (const playerName in match.players) {
-            const frags = match.players[playerName].frags
-            await this.globalRankingService.incrementFrags(playerName, frags)
-        }
+  @OnEvent('match.processed')
+  async handleMatchProcessed(match: ParsedMatch) {
+    for (const playerName in match.players) {
+      const frags = match.players[playerName].frags
+      await this.globalRankingService.incrementFrags(playerName, frags)
     }
+  }
 }

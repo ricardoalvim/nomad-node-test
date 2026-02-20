@@ -1,21 +1,21 @@
-import { PlayerStatsSchema } from "../match.schema"
+import { PlayerStatsSchema } from '../match.schema'
 import { Prop, Schema } from '@nestjs/mongoose'
-import { PlayerStats } from "./player.stats.model"
+import { PlayerStats } from './player.stats.model'
 
 @Schema({ timestamps: true, collection: 'matches' })
 export class MatchEntity extends Document {
-    @Prop({ required: true, unique: true })
-    matchId: string
+  @Prop({ required: true, unique: true })
+  matchId: string
 
-    @Prop({ required: true })
-    startTime: Date
+  @Prop({ required: true })
+  startTime: Date
 
-    @Prop()
-    endTime: Date
+  @Prop()
+  endTime: Date
 
-    @Prop({ type: Map, of: PlayerStatsSchema, default: {} })
-    players: Map<string, PlayerStats>
+  @Prop({ type: Map, of: PlayerStatsSchema, default: {} })
+  players: Map<string, PlayerStats>
 
-    @Prop()
-    winningWeapon: string
+  @Prop()
+  winningWeapon: string
 }

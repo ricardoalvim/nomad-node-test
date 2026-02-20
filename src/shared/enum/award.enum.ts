@@ -1,4 +1,4 @@
 export enum Award {
-    Immortal = 'Imortal',
-    Rambo = 'Rambo',
+  Immortal = 'Imortal',
+  Rambo = 'Rambo',
 }

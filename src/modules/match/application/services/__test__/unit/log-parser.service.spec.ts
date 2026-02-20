@@ -14,12 +14,7 @@ describe('LogParserService', () => {
 
   beforeEach(async () => {
     testingModule = await Test.createTestingModule({
-      providers: [
-        LogParserService,
-        BadgeEngine,
-        TimelineEngine,
-        MatchStateManager,
-      ],
+      providers: [LogParserService, BadgeEngine, TimelineEngine, MatchStateManager],
     }).compile()
 
     service = testingModule.get<LogParserService>(LogParserService)
@@ -105,16 +100,23 @@ describe('LogParserService', () => {
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed Marcus using M16`,
-      '23/04/2019 15:05:00 - Match 1 has ended'
+      '23/04/2019 15:05:00 - Match 1 has ended',
     ].join('\n')
 
     jest.spyOn(sm as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
       if (name === '<WORLD>') return
       if (!match.players[name]) {
         match.players[name] = {
-          name, frags: 0, deaths: 0, weapons: {},
-          currentStreak: 0, longestStreak: 0,
-          killTimestamps: [], team: 'Red', awards: [], badges: []
+          name,
+          frags: 0,
+          deaths: 0,
+          weapons: {},
+          currentStreak: 0,
+          longestStreak: 0,
+          killTimestamps: [],
+          team: 'Red',
+          awards: [],
+          badges: [],
         }
       }
     })
@@ -129,7 +131,7 @@ describe('LogParserService', () => {
       `23/04/2019 15:01:00 - Roman killed A using M16`,
       `23/04/2019 15:02:00 - Roman killed B using AK47`,
       `23/04/2019 15:03:00 - Roman killed C using KNIFE`,
-      '23/04/2019 15:05:00 - Match 1 has ended'
+      '23/04/2019 15:05:00 - Match 1 has ended',
     ].join('\n')
 
     jest.restoreAllMocks() // cleaning the mock from previous test
@@ -144,7 +146,7 @@ describe('LogParserService', () => {
     const logContent = [
       '23/04/2019 15:34:22 - New match 1 has started',
       `23/04/2019 15:36:33 - <WORLD> killed Nick by DROWN`,
-      '23/04/2019 15:39:22 - Match 1 has ended'
+      '23/04/2019 15:39:22 - Match 1 has ended',
     ].join('\n')
 
     const matches = service.parseLogContent(logContent)
@@ -159,24 +161,26 @@ describe('LogParserService', () => {
       `${baseDateStr}15 - Roman killed B using M16`,
       `${baseDateStr}20 - Roman killed C using M16`, // Streak >= 3
       `${baseDateStr}25 - Roman killed D using M16`, // 4 kills in <30s (Intense Action)
-      `${baseDateStr}30 - Match 1 has ended`
+      `${baseDateStr}30 - Match 1 has ended`,
     ].join('\n')
 
     const matches = service.parseLogContent(logContent)
     const timeline = matches[0].timeline
 
     expect(timeline).toBeDefined()
-    expect(timeline.some(e => e.type === TimelineEventType.FirstBlood)).toBeTruthy()
-    expect(timeline.some(e => e.type === TimelineEventType.KillStreak)).toBeTruthy()
-    expect(timeline.some(e => e.type === TimelineEventType.IntenseAction)).toBeTruthy()
+    expect(timeline.some((e) => e.type === TimelineEventType.FirstBlood)).toBeTruthy()
+    expect(timeline.some((e) => e.type === TimelineEventType.KillStreak)).toBeTruthy()
+    expect(timeline.some((e) => e.type === TimelineEventType.IntenseAction)).toBeTruthy()
   })
 
   it('should calculate Unstoppable and Perfect badges correctly', () => {
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       // Roman faz streak de 10 sem morrer (ganha Unstoppable e Perfect)
-      ...Array.from({ length: 10 }).map((_, i) => `23/04/2019 15:01:0${i} - Roman killed Target${i} using M16`),
-      '23/04/2019 15:05:00 - Match 1 has ended'
+      ...Array.from({ length: 10 }).map(
+        (_, i) => `23/04/2019 15:01:0${i} - Roman killed Target${i} using M16`,
+      ),
+      '23/04/2019 15:05:00 - Match 1 has ended',
     ].join('\n')
 
     const matches = service.parseLogContent(logContent)
@@ -207,20 +211,29 @@ describe('LogParserService', () => {
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed Marcus using M16`,
-      '23/04/2019 15:05:00 - Match 1 has ended'
+      '23/04/2019 15:05:00 - Match 1 has ended',
     ].join('\n')
 
     // AGORA O JEST VAI FUNCIONAR
-    jest.spyOn(stateManager as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
-      if (name === '<WORLD>' || name === 'WORLD') return
-      if (!match.players[name]) {
-        match.players[name] = {
-          name, frags: 0, deaths: 0, weapons: {},
-          currentStreak: 0, longestStreak: 0,
-          killTimestamps: [], team: 'Red', awards: [], badges: []
+    jest
+      .spyOn(stateManager as any, 'ensurePlayerExists')
+      .mockImplementation((match: any, name: string) => {
+        if (name === '<WORLD>' || name === 'WORLD') return
+        if (!match.players[name]) {
+          match.players[name] = {
+            name,
+            frags: 0,
+            deaths: 0,
+            weapons: {},
+            currentStreak: 0,
+            longestStreak: 0,
+            killTimestamps: [],
+            team: 'Red',
+            awards: [],
+            badges: [],
+          }
         }
-      }
-    })
+      })
 
     const matches = service.parseLogContent(logContent)
     expect(matches[0].players['Roman'].frags).toBe(-1)
@@ -246,7 +259,7 @@ describe('LogParserService', () => {
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed Target using M16`,
-      '23/04/2019 15:05:00 - Match 1 has ended'
+      '23/04/2019 15:05:00 - Match 1 has ended',
     ].join('\n')
 
     const matches = service.parseLogContent(logContent)

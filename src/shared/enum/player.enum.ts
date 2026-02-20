@@ -1,5 +1,5 @@
 export enum PlayerName {
-    Roman = 'Roman',
-    Nick = 'Nick',
-    World = '<WORLD>',
+  Roman = 'Roman',
+  Nick = 'Nick',
+  World = '<WORLD>',
 }

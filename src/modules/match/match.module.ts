@@ -37,4 +37,4 @@ import { MatchEntity } from './infra/persistence/model/match.model'
   ],
   controllers: [MatchController, AnalyticsController],
 })
-export class MatchModule { }
+export class MatchModule {}

@@ -55,9 +55,7 @@ describe('MatchController (e2e)', () => {
   })
 
   it('/matches/:id (GET) - Should return 404 for non-existent match', () => {
-    return request(app.getHttpServer())
-      .get('/matches/999999')
-      .expect(404)
+    return request(app.getHttpServer()).get('/matches/999999').expect(404)
   })
 
   it('/matches/upload (POST) - Should process complex logs with World kills', async () => {
@@ -73,8 +71,6 @@ describe('MatchController (e2e)', () => {
 
     const res = await request(app.getHttpServer()).get(ApiRoutes.MatchesById('2'))
 
-    // If Roman died by <world>, his frag count should be -1 or 0
-    // Nick should have 1
     const roman = res.body.ranking.find((p) => p.name === PlayerName.Roman)
     expect(roman.frags).toBeLessThan(1)
   })
@@ -109,18 +105,14 @@ describe('Complete Match Flow (e2e)', () => {
       .attach('file', Buffer.from(logData), 'log.txt')
       .expect(201)
 
-    const matchRes = await request(app.getHttpServer())
-      .get(ApiRoutes.MatchesById('1'))
-      .expect(200)
+    const matchRes = await request(app.getHttpServer()).get(ApiRoutes.MatchesById('1')).expect(200)
 
     expect(matchRes.body.ranking[0].name).toBe(PlayerName.Roman)
     expect(matchRes.body.ranking[0].frags).toBe(2)
 
-    const globalRes = await request(app.getHttpServer())
-      .get(ApiRoutes.RankingGlobal)
-      .expect(200)
+    const globalRes = await request(app.getHttpServer()).get(ApiRoutes.RankingGlobal).expect(200)
 
-    const romanGlobal = globalRes.body.find(p => p.name === PlayerName.Roman)
+    const romanGlobal = globalRes.body.find((p) => p.name === PlayerName.Roman)
     expect(romanGlobal.totalFrags).toBeGreaterThanOrEqual(2)
   })
 })

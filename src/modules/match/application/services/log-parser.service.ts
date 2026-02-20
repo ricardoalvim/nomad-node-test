@@ -12,8 +12,8 @@ export class LogParserService {
   constructor(
     private readonly badgeEngine: BadgeEngine,
     private readonly timelineEngine: TimelineEngine,
-    private readonly stateManager: MatchStateManager
-  ) { }
+    private readonly stateManager: MatchStateManager,
+  ) {}
 
   parseLogContent(content: string): ParsedMatch[] {
     const lines = content.split('\n')
@@ -48,7 +48,6 @@ export class LogParserService {
         continue
       }
 
-      // Kill Processing
       this.processAction(currentMatch, action, timestamp)
     }
 
@@ -62,7 +61,13 @@ export class LogParserService {
     if (playerKill) {
       this.stateManager.registerKill(match, playerKill[1], playerKill[2], playerKill[3], timestamp)
     } else if (worldKill) {
-      this.stateManager.registerKill(match, PlayerName.World, worldKill[1], 'environment', timestamp)
+      this.stateManager.registerKill(
+        match,
+        PlayerName.World,
+        worldKill[1],
+        'environment',
+        timestamp,
+      )
     }
   }
 
@@ -80,8 +85,9 @@ export class LogParserService {
     }
 
     if (topPlayer && Object.keys(topPlayer.weapons).length > 0) {
-      match.winningWeapon = Object.entries(topPlayer.weapons)
-        .sort(([, a], [, b]) => (b as number) - (a as number))[0][0] as any
+      match.winningWeapon = Object.entries(topPlayer.weapons).sort(
+        ([, a], [, b]) => (b as number) - (a as number),
+      )[0][0] as any
     }
 
     for (const name in match.players) {

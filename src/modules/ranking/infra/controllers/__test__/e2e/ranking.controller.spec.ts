@@ -4,33 +4,31 @@ import { GlobalRankingService } from '../../../../application/services/global-ra
 import { PlayerName } from 'src/shared/enum/player.enum'
 
 describe('RankingController', () => {
-    let controller: RankingController
-    let rankingService: jest.Mocked<GlobalRankingService>
+  let controller: RankingController
+  let rankingService: jest.Mocked<GlobalRankingService>
 
-    beforeEach(async () => {
-        const mockRankingService = {
-            incrementFrags: jest.fn(),
-            getGlobalRanking: jest.fn(),
-        }
+  beforeEach(async () => {
+    const mockRankingService = {
+      incrementFrags: jest.fn(),
+      getGlobalRanking: jest.fn(),
+    }
 
-        const module: TestingModule = await Test.createTestingModule({
-            controllers: [RankingController],
-            providers: [
-                { provide: GlobalRankingService, useValue: mockRankingService },
-            ],
-        }).compile()
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [RankingController],
+      providers: [{ provide: GlobalRankingService, useValue: mockRankingService }],
+    }).compile()
 
-        controller = module.get<RankingController>(RankingController)
-        rankingService = module.get(GlobalRankingService) as jest.Mocked<GlobalRankingService>
-    })
+    controller = module.get<RankingController>(RankingController)
+    rankingService = module.get(GlobalRankingService) as jest.Mocked<GlobalRankingService>
+  })
 
-    it('should return global ranking from service', async () => {
-        const mockRanking = [{ name: PlayerName.Roman, totalFrags: 15 }]
-        rankingService.getGlobalRanking.mockResolvedValue(mockRanking)
+  it('should return global ranking from service', async () => {
+    const mockRanking = [{ name: PlayerName.Roman, totalFrags: 15 }]
+    rankingService.getGlobalRanking.mockResolvedValue(mockRanking)
 
-        const result = await controller.getGlobalRanking()
+    const result = await controller.getGlobalRanking()
 
-        expect(rankingService.getGlobalRanking).toHaveBeenCalledTimes(1)
-        expect(result).toEqual(mockRanking)
-    })
+    expect(rankingService.getGlobalRanking).toHaveBeenCalledTimes(1)
+    expect(result).toEqual(mockRanking)
+  })
 })

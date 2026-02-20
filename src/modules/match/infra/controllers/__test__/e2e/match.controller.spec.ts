@@ -33,7 +33,9 @@ describe('MatchController', () => {
 
     controller = module.get<MatchController>(MatchController)
     processLogUseCase = module.get(ProcessLogUseCase) as jest.Mocked<ProcessLogUseCase>
-    getMatchDetailsUseCase = module.get(GetMatchDetailsUseCase) as jest.Mocked<GetMatchDetailsUseCase>
+    getMatchDetailsUseCase = module.get(
+      GetMatchDetailsUseCase,
+    ) as jest.Mocked<GetMatchDetailsUseCase>
   })
 
   it('uploadLog delega processamento e retorna UploadResult', async () => {
@@ -51,7 +53,7 @@ describe('MatchController', () => {
   it('getMatchBadges retorna badges por jogador', async () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '1',
-      players: { A: { badges: ['X'] } as any }
+      players: { A: { badges: ['X'] } as any },
     } as any)
 
     const res = await controller.getMatchBadges('1')
@@ -65,7 +67,9 @@ describe('MatchController', () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '1',
       players: {},
-      timeline: [{ timestamp: new Date(), type: 'x', description: 'd', players: [], severity: 'low' }]
+      timeline: [
+        { timestamp: new Date(), type: 'x', description: 'd', players: [], severity: 'low' },
+      ],
     } as any)
 
     const res = await controller.getMatchTimeline('1')
@@ -95,7 +99,7 @@ describe('MatchController', () => {
   it('getMatchBadges retorna as badges por jogador', async () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '123',
-      players: { Roman: { badges: [Badge.Flawless] as any } }
+      players: { Roman: { badges: [Badge.Flawless] as any } },
     } as any)
 
     const res = await controller.getMatchBadges('123')
@@ -107,7 +111,7 @@ describe('MatchController', () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '123',
       players: {},
-      timeline: [{ description: 'First Blood' }]
+      timeline: [{ description: 'First Blood' }],
     } as any)
 
     const res = await controller.getMatchTimeline('123')
@@ -118,7 +122,7 @@ describe('MatchController', () => {
   it('getMatchBadges returns empty array if player has no badges', async () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '123',
-      players: { Roman: {} as any }
+      players: { Roman: {} as any },
     } as any)
 
     const res = await controller.getMatchBadges('123')
@@ -129,7 +133,7 @@ describe('MatchController', () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '123',
       players: {},
-      timeline: undefined
+      timeline: undefined,
     } as any)
 
     const res = await controller.getMatchTimeline('123')
