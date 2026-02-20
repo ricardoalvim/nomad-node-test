@@ -26,7 +26,7 @@ describe('AnalyticsController', () => {
         useCase = module.get(GetPlayerComparisonUseCase) as jest.Mocked<GetPlayerComparisonUseCase>
     })
 
-    it('lança BadRequest quando parâmetros ausentes', async () => {
+    it('should throw BadRequest when parameters are missing', async () => {
         await expect(controller.compareHeadToHead('', 'B')).rejects.toThrow(BadRequestException)
         await expect(controller.compareHeadToHead('A', '')).rejects.toThrow(BadRequestException)
     })

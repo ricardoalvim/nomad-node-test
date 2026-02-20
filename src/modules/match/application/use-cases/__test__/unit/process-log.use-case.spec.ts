@@ -43,7 +43,7 @@ describe('ProcessLogUseCase', () => {
     eventEmitter = module.get(EventEmitter2) as jest.Mocked<EventEmitter2>
   })
 
-  it('deve processar, salvar e emitir evento', async () => {
+  it('should process, save and emit event', async () => {
     parser.parseLogContent.mockReturnValue([
       {
         matchId: '111',

@@ -24,12 +24,12 @@ describe('GlobalRankingService', () => {
         redisClient = module.get(REDIS_CLIENT)
     })
 
-    it('deve incrementar os frags no Redis corretamente', async () => {
+    it('should increment frags on Redis correctly', async () => {
         await service.incrementFrags(PlayerName.Roman, 2)
         expect(redisClient.zincrby).toHaveBeenCalledWith('global_ranking_frags', 2, PlayerName.Roman)
     })
 
-    it('não deve incrementar frags para o <WORLD> ou se o número de frags for 0', async () => {
+    it('should not increment frags for <WORLD> or if frag count is 0', async () => {
         await service.incrementFrags(PlayerName.World, 5)
         await service.incrementFrags(PlayerName.Nick, 0)
         await service.incrementFrags(PlayerName.Nick, -1)
@@ -37,7 +37,7 @@ describe('GlobalRankingService', () => {
         expect(redisClient.zincrby).not.toHaveBeenCalled()
     })
 
-    it('deve retornar o ranking formatado a partir do flat array do Redis', async () => {
+    it('should return formatted ranking from Redis flat array', async () => {
         redisClient.zrevrange.mockResolvedValue([PlayerName.Roman, '10', PlayerName.Nick, '5'])
 
         const result = await service.getGlobalRanking()

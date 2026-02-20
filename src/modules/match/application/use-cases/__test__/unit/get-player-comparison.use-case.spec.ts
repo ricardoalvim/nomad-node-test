@@ -26,16 +26,16 @@ describe('GetPlayerComparisonUseCase', () => {
         comparisonService = module.get(PlayerComparisonService) as jest.Mocked<PlayerComparisonService>
     })
 
-    it('lança BadRequest quando parâmetros ausentes', async () => {
+    it('should throw BadRequest when parameters are missing', async () => {
         await expect(useCase.execute('', 'B')).rejects.toThrow(BadRequestException)
         await expect(useCase.execute('A', '')).rejects.toThrow(BadRequestException)
     })
 
-    it('lança BadRequest quando nomes iguais', async () => {
+    it('should throw BadRequest when names are equal', async () => {
         await expect(useCase.execute('A', 'A')).rejects.toThrow(BadRequestException)
     })
 
-    it('delegates para o serviço de comparação quando válidos', async () => {
+    it('should delegate to comparison service when valid', async () => {
         const expected = { player1: { name: 'A' }, player2: { name: 'B' } }
 
         comparisonService.compareHeadToHead.mockResolvedValue(expected as any)

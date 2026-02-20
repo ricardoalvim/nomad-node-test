@@ -20,14 +20,14 @@ describe('PlayerComparisonService', () => {
         matchRepository = module.get(MatchRepository) as jest.Mocked<MatchRepository>
     })
 
-    it('retorna valores zero quando não há partidas em comum', async () => {
+    it('should return zero values when no shared matches', async () => {
         matchRepository.findAll.mockResolvedValue([])
         const res = await service.compareHeadToHead('A', 'B')
         expect(res.prediction).toBe('tie')
         expect(res.matches_played_together).toBe(0)
     })
 
-    it('calcula estatísticas, advantages e prediction corretamente', async () => {
+    it('should calculate statistics, advantages and prediction correctly', async () => {
         matchRepository.findAll.mockResolvedValue([
             {
                 players: {
@@ -60,7 +60,7 @@ describe('PlayerComparisonService', () => {
         expect(res.prediction).toBe('player2')
     })
 
-    it('deve retornar vantagens vazias e previsão tie se os status não existirem', async () => {
+    it('should return empty advantages and tie prediction if stats do not exist', async () => {
         const resAdvantages = (service as any).calculateAdvantages(undefined, undefined)
         expect(resAdvantages).toEqual([])
 
@@ -68,13 +68,13 @@ describe('PlayerComparisonService', () => {
         expect(resPrediction).toEqual({ prediction: 'tie', confidence: 0 })
     })
 
-    it('deve retornar null se o jogador não tiver armas', async () => {
+    it('should return null if player has no weapons', async () => {
         const res = (service as any).getMostUsedWeapon({})
         expect(res).toBeNull()
     })
 
-    it('deve lidar com empate técnico na previsão (tie)', async () => {
-        // Jogadores com status idênticos
+    it('should handle technical tie in prediction (tie)', async () => {
+        // Players with identical stats
         matchRepository.findAll.mockResolvedValue([
             {
                 players: {
@@ -86,14 +86,14 @@ describe('PlayerComparisonService', () => {
 
         const res = await service.compareHeadToHead('A', 'B')
         expect(res.prediction).toBe('tie')
-        expect(res.player1.win_rate).toBe(0) // Empate em frags não conta como win no seu loop
+        expect(res.player1.win_rate).toBe(0) // Tied frags doesn't count as win in your loop
     })
 
-    it('calcula vantagens de experiência e diversidade de armas', async () => {
+    it('should calculate experience and weapon diversity advantages', async () => {
         matchRepository.findAll.mockResolvedValue([
             {
                 players: {
-                    // A tem mais armas, B tem mais frags
+                    // A has more weapons, B has more frags
                     A: { frags: 1, deaths: 0, longestStreak: 1, weapons: { M16: 1, AK: 1, PISTOL: 1 } },
                     B: { frags: 10, deaths: 1, longestStreak: 5, weapons: { M16: 10 } }
                 }
@@ -103,5 +103,24 @@ describe('PlayerComparisonService', () => {
         const res = await service.compareHeadToHead('A', 'B')
         expect(res.advantages.player1).toContain('Weapon diversity')
         expect(res.advantages.player2).toContain('K/D ratio')
+    })
+
+    it('should predict victory for player 2 if they have more historical wins despite equal K/D', async () => {
+        matchRepository.findAll.mockResolvedValue([
+            {
+                players: {
+                    A: { frags: 10, deaths: 10, longestStreak: 2, weapons: { AK: 10 } },
+                    B: { frags: 10, deaths: 10, longestStreak: 2, weapons: { AK: 10 } }
+                }
+            } as any,
+            {
+                players: {
+                    A: { frags: 1, deaths: 5, longestStreak: 0, weapons: { AK: 1 } },
+                    B: { frags: 10, deaths: 0, longestStreak: 10, weapons: { AK: 10 } }
+                }
+            } as any
+        ])
+        const res = await service.compareHeadToHead('A', 'B')
+        expect(res.prediction).toBe('player2')
     })
 })

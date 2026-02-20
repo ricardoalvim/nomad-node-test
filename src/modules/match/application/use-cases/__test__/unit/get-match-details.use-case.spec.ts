@@ -28,7 +28,7 @@ describe('GetMatchDetailsUseCase', () => {
         matchRepository = module.get(MatchRepository) as jest.Mocked<MatchRepository>
     })
 
-    it('lança NotFoundException quando match não encontrado', async () => {
+    it('should throw NotFoundException when match not found', async () => {
         matchRepository.findById.mockResolvedValue(null)
         await expect(useCase.execute('123')).rejects.toThrow(NotFoundException)
         expect(matchRepository.findById).toHaveBeenCalledWith('123')
