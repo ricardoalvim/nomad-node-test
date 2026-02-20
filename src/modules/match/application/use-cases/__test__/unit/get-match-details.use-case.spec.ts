@@ -50,7 +50,7 @@ describe('GetMatchDetailsUseCase', () => {
 
         expect(res.matchId).toBe('123')
         expect(res.winningWeapon).toBe('M16')
-        // Verifica se a conversão funcionou
+
         expect(res.players['Roman'].frags).toBe(10)
     })
 })
