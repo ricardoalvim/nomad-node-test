@@ -218,7 +218,7 @@ describe('LogParserService', () => {
 
   it('should not allow more than 20 players per match', () => {
     let logContent = '23/04/2019 15:00:00 - New match 1 has started\n'
-    // Criamos 25 jogadores. Do 21 ao 25, eles devem ser ignorados
+    // Create 25 players. From 21 to 25, they should be ignored
     for (let i = 1; i <= 25; i++) {
       logContent += `23/04/2019 15:01:00 - Player${i} killed Target using M16\n`
     }
