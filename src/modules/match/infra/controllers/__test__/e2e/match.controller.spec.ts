@@ -115,7 +115,7 @@ describe('MatchController', () => {
     expect(res[0].description).toBe('First Blood')
   })
 
-  it('getMatchBadges retorna array vazio se o jogador não tiver badges', async () => {
+  it('getMatchBadges returns empty array if player has no badges', async () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '123',
       players: { Roman: {} as any }
@@ -125,7 +125,7 @@ describe('MatchController', () => {
     expect(res.playerBadges['Roman']).toEqual([])
   })
 
-  it('getMatchTimeline retorna array vazio se não houver timeline', async () => {
+  it('getMatchTimeline returns empty array if no timeline', async () => {
     getMatchDetailsUseCase.execute.mockResolvedValue({
       matchId: '123',
       players: {},

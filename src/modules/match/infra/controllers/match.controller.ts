@@ -32,7 +32,7 @@ export class MatchController {
   ) { }
 
   @Post(ApiRoutes.MatchesUpload)
-  @ApiOperation({ summary: 'Faz o upload do log do jogo para processamento' })
+  @ApiOperation({ summary: 'Upload game log for processing' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -57,21 +57,21 @@ export class MatchController {
     await this.processLogUseCase.execute(file.buffer)
 
     return {
-      message: 'Arquivo processado e salvo com sucesso!',
+      message: 'Log file processed and saved successfully!',
       filename: file.originalname,
       size: file.size,
     }
   }
 
   @Get(':matchId')
-  @ApiOperation({ summary: 'Retorna detalhes completos de um match específico' })
+  @ApiOperation({ summary: 'Get complete match details' })
   @ApiParam({ name: 'matchId', type: String, description: 'Match ID' })
   async getMatchDetails(@Param('matchId') matchId: string): Promise<ParsedMatch> {
     return this.getMatchDetailsUseCase.execute(matchId)
   }
 
   @Get(':matchId/badges')
-  @ApiOperation({ summary: 'Retorna badges conquistadas no match' })
+  @ApiOperation({ summary: 'Get match badges' })
   @ApiParam({ name: 'matchId', type: String, description: 'Match ID' })
   async getMatchBadges(@Param('matchId') matchId: string): Promise<BadgesResponse> {
     const match = await this.getMatchDetailsUseCase.execute(matchId)
@@ -88,7 +88,7 @@ export class MatchController {
   }
 
   @Get(':matchId/timeline')
-  @ApiOperation({ summary: 'Retorna timeline com eventos significativos do match' })
+  @ApiOperation({ summary: 'Get match timeline with significant events' })
   @ApiParam({ name: 'matchId', type: String, description: 'Match ID' })
   async getMatchTimeline(@Param('matchId') matchId: string): Promise<TimelineEvent[]> {
     const match = await this.getMatchDetailsUseCase.execute(matchId)
