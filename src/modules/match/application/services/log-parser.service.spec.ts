@@ -215,4 +215,20 @@ describe('LogParserService', () => {
     expect(roman.frags).toBe(-1)
     jest.restoreAllMocks() // Importante limpar aqui
   })
+
+  it('não deve permitir mais de 20 jogadores por partida', () => {
+    let logContent = '23/04/2019 15:00:00 - New match 1 has started\n'
+    // Criamos 25 jogadores. Do 21 ao 25, eles devem ser ignorados
+    for (let i = 1; i <= 25; i++) {
+      logContent += `23/04/2019 15:01:00 - Player${i} killed Target using M16\n`
+    }
+    logContent += '23/04/2019 15:05:00 - Match 1 has ended'
+
+    const matches = service.parseLogContent(logContent)
+    const playersNames = Object.keys(matches[0].players)
+
+    // O limite de 20 deve ser respeitado rigorosamente
+    expect(playersNames.length).toBeLessThanOrEqual(20)
+    expect(playersNames).not.toContain('Player21')
+  })
 })
