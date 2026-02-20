@@ -17,11 +17,8 @@ import { GetMatchDetailsUseCase } from '../../application/use-cases/get-match-de
 import { ApiRoutes } from 'src/shared/enum/api-routes.enum'
 import { ParsedMatch, TimelineEvent } from 'src/shared/interfaces/match.interfaces'
 import { Badge } from 'src/shared/enum/badge.enum'
-
-interface BadgesResponse {
-  matchId: string
-  playerBadges: Record<string, Badge[]>
-}
+import { BadgesResponse } from './interface/badge.response.dto'
+import { TextFileValidator } from '../validator/text-file-validator'
 
 @ApiTags('Matches')
 @Controller('matches')
@@ -29,27 +26,18 @@ export class MatchController {
   constructor(
     private readonly processLogUseCase: ProcessLogUseCase,
     private readonly getMatchDetailsUseCase: GetMatchDetailsUseCase,
-  ) {}
+  ) { }
 
   @Post(ApiRoutes.MatchesUpload)
   @ApiOperation({ summary: 'Upload game log for processing' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
+  // ... ApiBody ...
   @UseInterceptors(FileInterceptor('file'))
   async uploadLog(
     @UploadedFile(
       new ParseFilePipeBuilder()
-        .addFileTypeValidator({ fileType: 'text/plain' })
+        .addValidator(new TextFileValidator())
+        .addMaxSizeValidator({ maxSize: 1024 * 1024 * 5 })
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file: Express.Multer.File,

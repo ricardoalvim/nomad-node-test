@@ -1,5 +1,6 @@
-import { PlayerStatsSchema } from '../match.schema'
 import { Prop, Schema } from '@nestjs/mongoose'
+import { Document } from 'mongoose'
+import { PlayerStatsSchema } from '../match.schema'
 import { PlayerStats } from './player.stats.model'
 
 @Schema({ timestamps: true, collection: 'matches' })

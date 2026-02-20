@@ -47,6 +47,7 @@ describe('ProcessLogUseCase', () => {
     parser.parseLogContent.mockReturnValue([
       {
         matchId: '111',
+        startTime: new Date(), // <--- ADICIONE ESTA LINHA AQUI
         winningWeapon: Weapon.M16,
         players: {
           [PlayerName.Roman]: {
