@@ -29,6 +29,7 @@ import { PlayerComparisonService } from 'src/modules/match/application/services/
  */
 describe('E2E App (HTTP) - Endpoints', () => {
     let app: INestApplication
+    let matchRepository: any
 
     beforeAll(async () => {
         // In-memory match repository
@@ -53,14 +54,23 @@ describe('E2E App (HTTP) - Endpoints', () => {
             }
 
             async findPlayersInteractions(p1: string, p2: string) {
-                return Array.from(this.store.values()).filter((m: any) => {
-                    const players = m.players
-                    if (!players) return false
-                    if (players instanceof Map) {
-                        return players.has(p1) && players.has(p2)
-                    }
-                    return Boolean(players[p1] && players[p2])
-                })
+                return Array.from(this.store.values())
+                    .filter((m: any) => {
+                        const players = m.players
+                        if (!players) return false
+                        if (players instanceof Map) {
+                            return players.has(p1) && players.has(p2)
+                        }
+                        return Boolean(players[p1] && players[p2])
+                    })
+                    .map((m: any) => {
+                        // Normalize Map back to object for service consumption
+                        const copy = { ...m }
+                        if (copy.players instanceof Map) {
+                            copy.players = Object.fromEntries(copy.players)
+                        }
+                        return copy
+                    })
             }
         }
 
@@ -87,6 +97,9 @@ describe('E2E App (HTTP) - Endpoints', () => {
             }
         }
 
+        const repoInstance = new InMemoryMatchRepository()
+        matchRepository = repoInstance
+
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [EventEmitterModule.forRoot()],
             controllers: [MatchController, AnalyticsController, RankingController],
@@ -101,47 +114,52 @@ describe('E2E App (HTTP) - Endpoints', () => {
                 MatchStateManager,
                 PlayerComparisonService,
                 GlobalRankingService,
-                { provide: MatchRepository, useClass: InMemoryMatchRepository },
-                {
-                    provide: PlayerComparisonService,
-                    useValue: {
-                        compareHeadToHead: jest.fn().mockResolvedValue({
-                            player1: {
-                                name: 'Roman',
-                                frags: 1,
-                                deaths: 0,
-                                kills_against_opponent: 1,
-                                deaths_against_opponent: 0,
-                                win_rate: 100,
-                                favorite_weapon: 'M16',
-                                avg_kill_streak: 1,
-                                total_matches: 1,
-                            },
-                            player2: {
-                                name: 'Unguento',
-                                frags: 0,
-                                deaths: 1,
-                                kills_against_opponent: 0,
-                                deaths_against_opponent: 1,
-                                win_rate: 0,
-                                favorite_weapon: null,
-                                avg_kill_streak: 0,
-                                total_matches: 1,
-                            },
-                            matches_played_together: 1,
-                            total_head_to_head_kills: 1,
-                            advantages: { player1: ['frags'], player2: [] },
-                            prediction: 'player1',
-                            confidence: 80,
-                        }),
-                    },
-                },
+                { provide: MatchRepository, useValue: repoInstance },
                 { provide: REDIS_CLIENT, useValue: new FakeRedis() },
             ],
         }).compile()
 
         app = moduleFixture.createNestApplication()
         await app.init()
+
+        // Pre-populate repository with test data for analytics tests
+        await matchRepository.save({
+            matchId: 'match-1',
+            timestamp: new Date('2019-04-23T15:34:22'),
+            players: {
+                'Roman': {
+                    frags: 5,
+                    deaths: 2,
+                    longestStreak: 3,
+                    weapons: { 'M16': 3, 'Shotgun': 2 }
+                },
+                'Unguento': {
+                    frags: 2,
+                    deaths: 5,
+                    longestStreak: 1,
+                    weapons: { 'M16': 2 }
+                }
+            }
+        })
+
+        await matchRepository.save({
+            matchId: 'match-2',
+            timestamp: new Date('2019-04-23T16:00:00'),
+            players: {
+                'Roman': {
+                    frags: 8,
+                    deaths: 1,
+                    longestStreak: 6,
+                    weapons: { 'M16': 5, 'Shotgun': 3 }
+                },
+                'Unguento': {
+                    frags: 3,
+                    deaths: 8,
+                    longestStreak: 2,
+                    weapons: { 'Shotgun': 2, 'M16': 1 }
+                }
+            }
+        })
     })
 
     afterAll(async () => {
@@ -189,7 +207,7 @@ describe('E2E App (HTTP) - Endpoints', () => {
         expect(res.body.length).toBeGreaterThanOrEqual(0)
     })
 
-    it('Analytics compare endpoint should return head-to-head structure', async () => {
+    it('GET /analytics/comparison → should return head-to-head stats for players with shared matches', async () => {
         const res = await request(app.getHttpServer())
             .get('/analytics/comparison')
             .query({ player1: 'Roman', player2: 'Unguento' })
@@ -198,5 +216,58 @@ describe('E2E App (HTTP) - Endpoints', () => {
         expect(res.body).toHaveProperty('player1')
         expect(res.body).toHaveProperty('player2')
         expect(res.body).toHaveProperty('prediction')
+        expect(res.body).toHaveProperty('matches_played_together')
+        expect(res.body).toHaveProperty('total_head_to_head_kills')
+        expect(res.body).toHaveProperty('advantages')
+
+        // Verify Roman's stats (should have more frags than Unguento)
+        expect(res.body.player1.name).toBe('Roman')
+        expect(res.body.player1.frags).toBeGreaterThanOrEqual(13) // At least 5 + 8
+        expect(res.body.player1.deaths).toBeGreaterThanOrEqual(3) // At least 2 + 1
+        expect(res.body.player1.win_rate).toBeGreaterThan(0)
+        expect(res.body.player1.favorite_weapon).toBe('M16')
+
+        // Verify Unguento's stats (should have fewer frags)
+        expect(res.body.player2.name).toBe('Unguento')
+        expect(res.body.player2.frags).toBeGreaterThanOrEqual(5) // At least 2 + 3
+        expect(res.body.player2.deaths).toBeGreaterThanOrEqual(13) // At least 5 + 8
+        expect(res.body.player2.frags).toBeLessThan(res.body.player1.frags) // Always fewer than Roman
+
+        // Verify matches count (at minimum 2, but may be more from previous tests)
+        expect(res.body.matches_played_together).toBeGreaterThanOrEqual(2)
+
+        // Roman should be predicted as winner
+        expect(res.body.prediction).toBe('player1')
+        expect(res.body.confidence).toBeGreaterThan(0)
+    })
+
+    it('GET /analytics/comparison → should return default response for players with no shared matches', async () => {
+        const res = await request(app.getHttpServer())
+            .get('/analytics/comparison')
+            .query({ player1: 'Roman', player2: 'UnknownPlayer' })
+            .expect(200)
+
+        expect(res.body.matches_played_together).toBe(0)
+        expect(res.body.prediction).toBe('tie')
+        expect(res.body.confidence).toBe(0)
+    })
+
+    it('GET /analytics/comparison → should fail if parameters are missing', async () => {
+        await request(app.getHttpServer())
+            .get('/analytics/comparison')
+            .query({ player1: 'Roman' })
+            .expect(400)
+
+        await request(app.getHttpServer())
+            .get('/analytics/comparison')
+            .query({ player2: 'Unguento' })
+            .expect(400)
+    })
+
+    it('GET /analytics/comparison → should fail if same player is compared', async () => {
+        await request(app.getHttpServer())
+            .get('/analytics/comparison')
+            .query({ player1: 'Roman', player2: 'Roman' })
+            .expect(400)
     })
 })
