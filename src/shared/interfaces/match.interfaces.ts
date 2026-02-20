@@ -41,6 +41,8 @@ export interface TimelineEvent {
 
 export interface ParsedMatch {
   matchId: string
+  startTime: Date
+  endTime?: Date | null
   players: Record<string, ParsedPlayer>
   winningWeapon?: Weapon | null
   timeline?: TimelineEvent[]

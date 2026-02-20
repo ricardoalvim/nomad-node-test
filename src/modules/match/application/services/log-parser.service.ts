@@ -13,7 +13,7 @@ export class LogParserService {
     private readonly badgeEngine: BadgeEngine,
     private readonly timelineEngine: TimelineEngine,
     private readonly stateManager: MatchStateManager,
-  ) {}
+  ) { }
 
   parseLogContent(content: string): ParsedMatch[] {
     const lines = content.split('\n')
@@ -34,7 +34,11 @@ export class LogParserService {
       if (action.includes('has started')) {
         const startMatch = action.match(/New match (\d+) has started/)
         if (startMatch) {
-          currentMatch = { matchId: startMatch[1], players: {} }
+          currentMatch = {
+            matchId: startMatch[1],
+            startTime: timestamp,
+            players: {}
+          }
         }
         continue
       }
