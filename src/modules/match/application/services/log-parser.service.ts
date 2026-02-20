@@ -72,6 +72,8 @@ export class LogParserService {
         const killer = currentMatch.players[killerName]
         const victim = currentMatch.players[victimName]
 
+        if (!killer || !victim) continue
+
         if (killerName !== victimName) {
           const isFriendlyFire = killer.team && victim.team && killer.team === victim.team
 
