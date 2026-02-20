@@ -267,4 +267,28 @@ describe('LogParserService', () => {
 
     expect((roman as any).badges).not.toContain(Badge.Blitz)
   })
+
+  it('should ignore player actions before match started', () => {
+    const logContent = [
+      `23/04/2019 15:00:00 - Roman killed Nick using M16`,
+      '23/04/2019 15:01:00 - New match 1 has started',
+      `23/04/2019 15:02:00 - Roman killed Nick using M16`,
+      '23/04/2019 15:05:00 - Match 1 has ended',
+    ].join('\n')
+
+    const matches = service.parseLogContent(logContent)
+    expect(matches[0].players['Roman'].frags).toBe(1)
+  })
+
+  it('should handle empty or null match state gracefully', () => {
+    const logContent = [
+      `23/04/2019 15:00:00 - Roman killed Nick using M16`,
+      '23/04/2019 15:01:00 - New match 1 has started',
+      '23/04/2019 15:05:00 - Match 1 has ended',
+    ].join('\n')
+
+    const matches = service.parseLogContent(logContent)
+    expect(matches).toHaveLength(1)
+    expect(matches[0].matchId).toBe('1')
+  })
 })
