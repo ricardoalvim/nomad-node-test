@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { GlobalRankingService } from './global-ranking.service'
+import { GlobalRankingService } from '../../global-ranking.service'
 import { REDIS_CLIENT } from 'src/infra/cache/redis-cache.module'
 import { PlayerName } from 'src/shared/enum/player.enum'
 

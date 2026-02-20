@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { MatchProcessedListener } from './match-processed.listener'
-import { GlobalRankingService } from '../services/global-ranking.service'
+import { MatchProcessedListener } from '../../match-processed.listener'
+import { GlobalRankingService } from '../../../services/global-ranking.service'
 import { PlayerName } from 'src/shared/enum/player.enum'
 import { ParsedMatch } from 'src/shared/interfaces/match.interfaces'
 

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { MatchController } from './match.controller'
-import { ProcessLogUseCase } from '../../application/use-cases/process-log.use-case'
-import { GetMatchDetailsUseCase } from '../../application/use-cases/get-match-details.use-case'
+import { MatchController } from '../../match.controller'
+import { ProcessLogUseCase } from '../../../../application/use-cases/process-log.use-case'
+import { GetMatchDetailsUseCase } from '../../../../application/use-cases/get-match-details.use-case'
 import { Badge } from 'src/shared/enum/badge.enum'
 
 describe('MatchController', () => {

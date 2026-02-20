@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { AnalyticsController } from './analytics.controller'
-import { GetPlayerComparisonUseCase } from '../../application/use-cases/get-player-comparison.use-case'
+import { AnalyticsController } from '../../analytics.controller'
+import { GetPlayerComparisonUseCase } from '../../../../application/use-cases/get-player-comparison.use-case'
 import { BadRequestException } from '@nestjs/common'
 
 describe('AnalyticsController', () => {

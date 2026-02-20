@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { GetMatchDetailsUseCase } from './get-match-details.use-case'
-import { MatchRepository } from '../../domain/repositories/match.repository'
+import { GetMatchDetailsUseCase } from '../../get-match-details.use-case'
+import { MatchRepository } from '../../../../domain/repositories/match.repository'
 import { NotFoundException } from '@nestjs/common'
 
 describe('GetMatchDetailsUseCase', () => {

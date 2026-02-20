@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { GetPlayerComparisonUseCase } from './get-player-comparison.use-case'
-import { PlayerComparisonService } from '../services/player-comparison.service'
+import { GetPlayerComparisonUseCase } from '../../get-player-comparison.use-case'
+import { PlayerComparisonService } from '../../../services/player-comparison.service'
 import { BadRequestException } from '@nestjs/common'
 
 describe('GetPlayerComparisonUseCase', () => {

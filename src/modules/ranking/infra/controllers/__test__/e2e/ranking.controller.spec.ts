@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { RankingController } from './ranking.controller'
-import { GlobalRankingService } from '../../application/services/global-ranking.service'
+import { RankingController } from '../../ranking.controller'
+import { GlobalRankingService } from '../../../../application/services/global-ranking.service'
 import { PlayerName } from 'src/shared/enum/player.enum'
 
 describe('RankingController', () => {

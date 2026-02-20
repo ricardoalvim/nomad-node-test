@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { PlayerComparisonService } from './player-comparison.service'
-import { MatchRepository } from '../../domain/repositories/match.repository'
+import { PlayerComparisonService } from '../../player-comparison.service'
+import { MatchRepository } from '../../../../domain/repositories/match.repository'
 
 describe('PlayerComparisonService', () => {
     let service: PlayerComparisonService

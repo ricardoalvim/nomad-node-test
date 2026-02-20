@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { LogParserService } from './log-parser.service'
+import { LogParserService } from '../../log-parser.service'
 import { PlayerName } from 'src/shared/enum/player.enum'
 import { Weapon } from 'src/shared/enum/weapon.enum'
 import { Badge } from 'src/shared/enum/badge.enum'
