@@ -17,11 +17,7 @@ import { GetMatchDetailsUseCase } from '../../application/use-cases/get-match-de
 import { ApiRoutes } from 'src/shared/enum/api-routes.enum'
 import { ParsedMatch, TimelineEvent } from 'src/shared/interfaces/match.interfaces'
 import { Badge } from 'src/shared/enum/badge.enum'
-
-interface BadgesResponse {
-  matchId: string
-  playerBadges: Record<string, Badge[]>
-}
+import { BadgesResponse } from './interface/badge.response.dto'
 
 @ApiTags('Matches')
 @Controller('matches')
@@ -29,7 +25,7 @@ export class MatchController {
   constructor(
     private readonly processLogUseCase: ProcessLogUseCase,
     private readonly getMatchDetailsUseCase: GetMatchDetailsUseCase,
-  ) {}
+  ) { }
 
   @Post(ApiRoutes.MatchesUpload)
   @ApiOperation({ summary: 'Upload game log for processing' })
