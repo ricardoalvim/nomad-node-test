@@ -28,4 +28,11 @@ export class MatchMongooseRepository implements MatchRepository {
   async findAll(): Promise<MatchEntity[]> {
     return this.matchModel.find().exec()
   }
+
+  async findPlayersInteractions(p1: string, p2: string): Promise<ParsedMatch[]> {
+    return this.matchModel.find({
+      [`players.${p1}`]: { $exists: true },
+      [`players.${p2}`]: { $exists: true }
+    }).lean()
+  }
 }
