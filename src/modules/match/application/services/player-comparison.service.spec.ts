@@ -59,4 +59,17 @@ describe('PlayerComparisonService', () => {
         const res = await service.compareHeadToHead('A', 'B')
         expect(res.prediction).toBe('player2')
     })
+
+    it('deve retornar vantagens vazias e previsão tie se os status não existirem', async () => {
+        const resAdvantages = (service as any).calculateAdvantages(undefined, undefined)
+        expect(resAdvantages).toEqual([])
+
+        const resPrediction = (service as any).makePrediction(undefined, undefined)
+        expect(resPrediction).toEqual({ prediction: 'tie', confidence: 0 })
+    })
+
+    it('deve retornar null se o jogador não tiver armas', async () => {
+        const res = (service as any).getMostUsedWeapon({})
+        expect(res).toBeNull()
+    })
 })
