@@ -16,7 +16,8 @@ API robusta desenvolvida em NestJS para processamento de logs de jogos FPS, gera
 - Jest (+90% de Test Coverage em módulos críticos)
 - Swagger (Documentação da API)
 
-# Como rodarBash# Iniciar infraestrutura (Mongo e Redis)
+## Como rodar (Bash)
+# Iniciar infraestrutura (Mongo e Redis)
 docker-compose up -d
 
 # Instalar dependências
