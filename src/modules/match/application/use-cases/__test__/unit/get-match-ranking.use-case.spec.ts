@@ -25,7 +25,6 @@ describe('GetMatchRankingUseCase', () => {
   })
 
   it('should return ranking formatted and sorted by frags', async () => {
-    // Mock database return with players out of order
     repository.findById.mockResolvedValue({
       matchId: '123',
       winningWeapon: Weapon.AK47,

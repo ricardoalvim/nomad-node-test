@@ -13,7 +13,7 @@ API robusta desenvolvida em NestJS para processamento de logs de jogos FPS, gera
 - Node.js & NestJS (TypeScript)
 - MongoDB (Persistência de partidas)
 - Redis (Ranking Global e Cache)
-- Jest (100% de Test Coverage em módulos críticos)
+- Jest (+90% de Test Coverage em módulos críticos)
 - Swagger (Documentação da API)
 
 # Como rodarBash# Iniciar infraestrutura (Mongo e Redis)

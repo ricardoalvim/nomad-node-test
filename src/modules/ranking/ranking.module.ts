@@ -14,8 +14,8 @@ Ranking Module
 
 */
 @Module({
-    imports: [RedisCacheModule],
-    controllers: [RankingController],
-    providers: [GlobalRankingService, MatchProcessedListener],
+  imports: [RedisCacheModule],
+  controllers: [RankingController],
+  providers: [GlobalRankingService, MatchProcessedListener],
 })
-export class RankingModule { }
+export class RankingModule {}

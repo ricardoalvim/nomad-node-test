@@ -4,25 +4,25 @@ import { ParsedMatch, ParsedPlayer } from 'src/shared/interfaces/match.interface
 
 @Injectable()
 export class GetMatchDetailsUseCase {
-    constructor(private readonly matchRepository: MatchRepository) { }
+  constructor(private readonly matchRepository: MatchRepository) {}
 
-    async execute(matchId: string): Promise<ParsedMatch> {
-        const match = await this.matchRepository.findById(matchId)
+  async execute(matchId: string): Promise<ParsedMatch> {
+    const match = await this.matchRepository.findById(matchId)
 
-        if (!match) {
-            throw new NotFoundException(`Match with id ${matchId} not found`)
-        }
-        const playersRecord: Record<string, ParsedPlayer> = {}
-
-        if (match.players) {
-            match.players.forEach((playerStats, playerName) => {
-                playersRecord[playerName] = playerStats as unknown as ParsedPlayer
-            })
-        }
-        return {
-            matchId: match.matchId,
-            winningWeapon: match.winningWeapon,
-            players: playersRecord,
-        } as ParsedMatch
+    if (!match) {
+      throw new NotFoundException(`Match with id ${matchId} not found`)
     }
+    const playersRecord: Record<string, ParsedPlayer> = {}
+
+    if (match.players) {
+      match.players.forEach((playerStats, playerName) => {
+        playersRecord[playerName] = playerStats as unknown as ParsedPlayer
+      })
+    }
+    return {
+      matchId: match.matchId,
+      winningWeapon: match.winningWeapon,
+      players: playersRecord,
+    } as ParsedMatch
+  }
 }

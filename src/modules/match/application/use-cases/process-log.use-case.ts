@@ -9,7 +9,7 @@ export class ProcessLogUseCase {
     private readonly logParserService: LogParserService,
     private readonly matchRepository: MatchRepository,
     private readonly eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async execute(fileBuffer: Buffer): Promise<void> {
     const fileContent = fileBuffer.toString('utf-8')
@@ -18,7 +18,7 @@ export class ProcessLogUseCase {
 
     for (const match of parsedMatches) {
       const existingMatch = await this.matchRepository.findById(match.matchId)
-      if (existingMatch) continue; // Ignore if processed this matchId before - idempotency key
+      if (existingMatch) continue // Ignore if processed this matchId before - idempotency key
 
       await this.matchRepository.save(match)
       this.eventEmitter.emit('match.processed', match)

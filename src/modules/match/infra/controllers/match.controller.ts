@@ -29,7 +29,7 @@ export class MatchController {
   constructor(
     private readonly processLogUseCase: ProcessLogUseCase,
     private readonly getMatchDetailsUseCase: GetMatchDetailsUseCase,
-  ) { }
+  ) {}
 
   @Post(ApiRoutes.MatchesUpload)
   @ApiOperation({ summary: 'Upload game log for processing' })

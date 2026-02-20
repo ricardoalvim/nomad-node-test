@@ -6,7 +6,7 @@ import { MatchRepository } from '../../domain/repositories/match.repository'
 
 @Injectable()
 export class GetMatchRankingUseCase {
-  constructor(private readonly matchRepository: MatchRepository) { }
+  constructor(private readonly matchRepository: MatchRepository) {}
 
   async execute(matchId: string): Promise<MatchRankingDto> {
     const match: MatchEntity | null = await this.matchRepository.findById(matchId)

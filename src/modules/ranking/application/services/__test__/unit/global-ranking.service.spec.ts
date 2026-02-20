@@ -4,47 +4,44 @@ import { REDIS_CLIENT } from 'src/infra/cache/redis-cache.module'
 import { PlayerName } from 'src/shared/enum/player.enum'
 
 describe('GlobalRankingService', () => {
-    let service: GlobalRankingService
-    let redisClient: any
+  let service: GlobalRankingService
+  let redisClient: any
 
-    beforeEach(async () => {
-        const mockRedis = {
-            zincrby: jest.fn(),
-            zrevrange: jest.fn(),
-        }
+  beforeEach(async () => {
+    const mockRedis = {
+      zincrby: jest.fn(),
+      zrevrange: jest.fn(),
+    }
 
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                GlobalRankingService,
-                { provide: REDIS_CLIENT, useValue: mockRedis },
-            ],
-        }).compile()
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [GlobalRankingService, { provide: REDIS_CLIENT, useValue: mockRedis }],
+    }).compile()
 
-        service = module.get<GlobalRankingService>(GlobalRankingService)
-        redisClient = module.get(REDIS_CLIENT)
-    })
+    service = module.get<GlobalRankingService>(GlobalRankingService)
+    redisClient = module.get(REDIS_CLIENT)
+  })
 
-    it('should increment frags on Redis correctly', async () => {
-        await service.incrementFrags(PlayerName.Roman, 2)
-        expect(redisClient.zincrby).toHaveBeenCalledWith('global_ranking_frags', 2, PlayerName.Roman)
-    })
+  it('should increment frags on Redis correctly', async () => {
+    await service.incrementFrags(PlayerName.Roman, 2)
+    expect(redisClient.zincrby).toHaveBeenCalledWith('global_ranking_frags', 2, PlayerName.Roman)
+  })
 
-    it('should not increment frags for <WORLD> or if frag count is 0', async () => {
-        await service.incrementFrags(PlayerName.World, 5)
-        await service.incrementFrags(PlayerName.Nick, 0)
-        await service.incrementFrags(PlayerName.Nick, -1)
+  it('should not increment frags for <WORLD> or if frag count is 0', async () => {
+    await service.incrementFrags(PlayerName.World, 5)
+    await service.incrementFrags(PlayerName.Nick, 0)
+    await service.incrementFrags(PlayerName.Nick, -1)
 
-        expect(redisClient.zincrby).not.toHaveBeenCalled()
-    })
+    expect(redisClient.zincrby).not.toHaveBeenCalled()
+  })
 
-    it('should return formatted ranking from Redis flat array', async () => {
-        redisClient.zrevrange.mockResolvedValue([PlayerName.Roman, '10', PlayerName.Nick, '5'])
+  it('should return formatted ranking from Redis flat array', async () => {
+    redisClient.zrevrange.mockResolvedValue([PlayerName.Roman, '10', PlayerName.Nick, '5'])
 
-        const result = await service.getGlobalRanking()
+    const result = await service.getGlobalRanking()
 
-        expect(redisClient.zrevrange).toHaveBeenCalledWith('global_ranking_frags', 0, -1, 'WITHSCORES')
-        expect(result).toHaveLength(2)
-        expect(result[0]).toEqual({ name: PlayerName.Roman, totalFrags: 10 })
-        expect(result[1]).toEqual({ name: PlayerName.Nick, totalFrags: 5 })
-    })
+    expect(redisClient.zrevrange).toHaveBeenCalledWith('global_ranking_frags', 0, -1, 'WITHSCORES')
+    expect(result).toHaveLength(2)
+    expect(result[0]).toEqual({ name: PlayerName.Roman, totalFrags: 10 })
+    expect(result[1]).toEqual({ name: PlayerName.Nick, totalFrags: 5 })
+  })
 })

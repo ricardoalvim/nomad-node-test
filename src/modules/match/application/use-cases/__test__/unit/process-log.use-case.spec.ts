@@ -75,13 +75,11 @@ describe('ProcessLogUseCase', () => {
     const fileBuffer = Buffer.from('23/04/2019 15:34:22 - New match 123 has started')
     const mockMatch = { matchId: '123', players: {} }
 
-    // Usando as variáveis injetadas corretamente (parser e repository)
     parser.parseLogContent.mockReturnValue([mockMatch as any])
     repository.findById.mockResolvedValue(mockMatch as any)
 
     await useCase.execute(fileBuffer)
 
-    // Verifica a idempotência: não deve salvar nem emitir evento se o ID já existe
     expect(repository.save).not.toHaveBeenCalled()
     expect(eventEmitter.emit).not.toHaveBeenCalled()
   })

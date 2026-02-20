@@ -16,7 +16,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
     DatabaseModule,
     RedisCacheModule,
     MatchModule,
-    RankingModule
+    RankingModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,5 +1,5 @@
 export interface UploadResult {
-    message: string
-    filename: string
-    size: number
+  message: string
+  filename: string
+  size: number
 }
