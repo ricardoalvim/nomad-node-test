@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { ParsedMatch } from 'src/shared/interfaces/match.interfaces'
 import { MatchRepository } from 'src/modules/match/domain/repositories/match.repository'
-import { MatchEntity } from 'src/modules/match/infra/persistence/match.schema'
+import { MatchEntity } from '../persistence/model/match.model'
 
 @Injectable()
 export class MatchMongooseRepository implements MatchRepository {

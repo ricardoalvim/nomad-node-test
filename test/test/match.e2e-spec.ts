@@ -28,7 +28,7 @@ describe('MatchController (e2e)', () => {
     await app.close()
   })
 
-  it('/matches/upload (POST) - Deve processar log e retornar 201', () => {
+  it('/matches/upload (POST) - Should process log and return 201', () => {
     const logContent = `23/04/2019 15:34:22 - New match 1 has started
 23/04/2019 15:36:04 - ${PlayerName.Roman} killed ${PlayerName.Nick} using M16
 23/04/2019 15:39:22 - Match 1 has ended`
@@ -42,7 +42,7 @@ describe('MatchController (e2e)', () => {
       })
   })
 
-  it('/matches/:id (GET) - Deve retornar o ranking da partida processada', async () => {
+  it('/matches/:id (GET) - Should return processed match ranking', async () => {
     const response = await request(app.getHttpServer()).get(ApiRoutes.MatchesById('1')).expect(200)
 
     expect(response.body.matchId).toBe('1')
@@ -50,17 +50,17 @@ describe('MatchController (e2e)', () => {
     expect(response.body.ranking[0].frags).toBe(1)
   })
 
-  it('/matches/upload (POST) - Deve falhar se não houver ficheiro (400)', () => {
+  it('/matches/upload (POST) - Should fail if no file provided (400)', () => {
     return request(app.getHttpServer()).post(ApiRoutes.MatchesUpload).expect(400)
   })
 
-  it('/matches/:id (GET) - Deve retornar 404 para partida inexistente', () => {
+  it('/matches/:id (GET) - Should return 404 for non-existent match', () => {
     return request(app.getHttpServer())
       .get('/matches/999999')
       .expect(404)
   })
 
-  it('/matches/upload (POST) - Deve processar logs complexos com World kills', async () => {
+  it('/matches/upload (POST) - Should process complex logs with World kills', async () => {
     const complexLog = `23/04/2019 15:34:22 - New match 2 has started
 23/04/2019 15:36:04 - ${PlayerName.World} killed ${PlayerName.Roman} by MOD_FALLING
 23/04/2019 15:36:05 - ${PlayerName.Nick} killed ${PlayerName.Roman} using M16
@@ -73,14 +73,14 @@ describe('MatchController (e2e)', () => {
 
     const res = await request(app.getHttpServer()).get(ApiRoutes.MatchesById('2'))
 
-    // Se o Roman morreu pelo <world>, o frag dele deve ser -1 (ou 0 dependendo da regra que aplicamos)
-    // E o Nick deve ter 1.
+    // If Roman died by <world>, his frag count should be -1 or 0
+    // Nick should have 1
     const roman = res.body.ranking.find((p) => p.name === PlayerName.Roman)
     expect(roman.frags).toBeLessThan(1)
   })
 })
 
-describe('Fluxo Completo de Partida (e2e)', () => {
+describe('Complete Match Flow (e2e)', () => {
   let app: INestApplication
 
   beforeAll(async () => {
@@ -96,7 +96,7 @@ describe('Fluxo Completo de Partida (e2e)', () => {
     await app.close()
   })
 
-  it('Deve processar log, salvar no Mongo e atualizar Ranking Global', async () => {
+  it('Should process log, save to Mongo and update Global Ranking', async () => {
     const logData = `
   23/04/2019 15:34:22 - New match 1 has started
   23/04/2019 15:36:04 - ${PlayerName.Roman} killed ${PlayerName.Nick} using M16

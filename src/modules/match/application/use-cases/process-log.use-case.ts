@@ -17,8 +17,10 @@ export class ProcessLogUseCase {
     const parsedMatches = this.logParserService.parseLogContent(fileContent)
 
     for (const match of parsedMatches) {
-      await this.matchRepository.save(match)
+      const existingMatch = await this.matchRepository.findById(match.matchId)
+      if (existingMatch) continue; // Ignore if processed this matchId before - idempotency key
 
+      await this.matchRepository.save(match)
       this.eventEmitter.emit('match.processed', match)
     }
   }

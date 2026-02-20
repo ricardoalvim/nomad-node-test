@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { MatchProcessedListener } from './match-processed.listener'
-import { GlobalRankingService } from '../services/global-ranking.service'
+import { MatchProcessedListener } from '../../match-processed.listener'
+import { GlobalRankingService } from '../../../services/global-ranking.service'
 import { PlayerName } from 'src/shared/enum/player.enum'
 import { ParsedMatch } from 'src/shared/interfaces/match.interfaces'
 
@@ -25,7 +25,7 @@ describe('MatchProcessedListener', () => {
         rankingService = module.get(GlobalRankingService) as jest.Mocked<GlobalRankingService>
     })
 
-    it('deve processar a partida e mandar incrementar frags de todos os jogadores', async () => {
+    it('should process match and order to increment frags for all players', async () => {
         const mockMatch: Partial<ParsedMatch> = {
             matchId: '123',
             players: {
