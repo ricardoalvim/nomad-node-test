@@ -72,4 +72,36 @@ describe('PlayerComparisonService', () => {
         const res = (service as any).getMostUsedWeapon({})
         expect(res).toBeNull()
     })
+
+    it('deve lidar com empate técnico na previsão (tie)', async () => {
+        // Jogadores com status idênticos
+        matchRepository.findAll.mockResolvedValue([
+            {
+                players: {
+                    A: { frags: 5, deaths: 5, longestStreak: 2, weapons: { M16: 5 } },
+                    B: { frags: 5, deaths: 5, longestStreak: 2, weapons: { M16: 5 } }
+                }
+            } as any
+        ])
+
+        const res = await service.compareHeadToHead('A', 'B')
+        expect(res.prediction).toBe('tie')
+        expect(res.player1.win_rate).toBe(0) // Empate em frags não conta como win no seu loop
+    })
+
+    it('calcula vantagens de experiência e diversidade de armas', async () => {
+        matchRepository.findAll.mockResolvedValue([
+            {
+                players: {
+                    // A tem mais armas, B tem mais frags
+                    A: { frags: 1, deaths: 0, longestStreak: 1, weapons: { M16: 1, AK: 1, PISTOL: 1 } },
+                    B: { frags: 10, deaths: 1, longestStreak: 5, weapons: { M16: 10 } }
+                }
+            } as any
+        ])
+
+        const res = await service.compareHeadToHead('A', 'B')
+        expect(res.advantages.player1).toContain('Weapon diversity')
+        expect(res.advantages.player2).toContain('K/D ratio')
+    })
 })

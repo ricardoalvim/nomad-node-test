@@ -114,4 +114,25 @@ describe('MatchController', () => {
     expect(res).toHaveLength(1)
     expect(res[0].description).toBe('First Blood')
   })
+
+  it('getMatchBadges retorna array vazio se o jogador não tiver badges', async () => {
+    getMatchDetailsUseCase.execute.mockResolvedValue({
+      matchId: '123',
+      players: { Roman: {} as any }
+    } as any)
+
+    const res = await controller.getMatchBadges('123')
+    expect(res.playerBadges['Roman']).toEqual([])
+  })
+
+  it('getMatchTimeline retorna array vazio se não houver timeline', async () => {
+    getMatchDetailsUseCase.execute.mockResolvedValue({
+      matchId: '123',
+      players: {},
+      timeline: undefined
+    } as any)
+
+    const res = await controller.getMatchTimeline('123')
+    expect(res).toEqual([])
+  })
 })

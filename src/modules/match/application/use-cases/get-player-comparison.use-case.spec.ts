@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { GetPlayerComparisonUseCase } from './get-player-comparison.use-case'
-import { BadRequestException } from '@nestjs/common'
 import { PlayerComparisonService } from '../services/player-comparison.service'
+import { BadRequestException } from '@nestjs/common'
 
 describe('GetPlayerComparisonUseCase', () => {
     let useCase: GetPlayerComparisonUseCase
@@ -23,6 +23,7 @@ describe('GetPlayerComparisonUseCase', () => {
         }).compile()
 
         useCase = module.get<GetPlayerComparisonUseCase>(GetPlayerComparisonUseCase)
+        comparisonService = module.get(PlayerComparisonService) as jest.Mocked<PlayerComparisonService>
     })
 
     it('lança BadRequest quando parâmetros ausentes', async () => {
