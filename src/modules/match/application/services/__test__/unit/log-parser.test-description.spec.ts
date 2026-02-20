@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { LogParserService } from '../../log-parser.service'
 import { Award } from 'src/shared/enum/award.enum'
 
-describe('LogParserService - Exemplos do Enunciado', () => {
+describe('LogParserService - Nomad Test Description Case', () => {
     let service: LogParserService
 
     beforeEach(async () => {

@@ -231,4 +231,17 @@ describe('LogParserService', () => {
     expect(playersNames.length).toBeLessThanOrEqual(20)
     expect(playersNames).not.toContain('Player21')
   })
+
+  it('should not award Blitz badge if player has fewer than 7 kills', () => {
+    const logContent = [
+      '23/04/2019 15:00:00 - New match 1 has started',
+      `23/04/2019 15:01:00 - Roman killed Target using M16`,
+      '23/04/2019 15:05:00 - Match 1 has ended'
+    ].join('\n')
+
+    const matches = service.parseLogContent(logContent)
+    const roman = matches[0].players['Roman']
+
+    expect((roman as any).badges).not.toContain(Badge.Blitz)
+  })
 })
