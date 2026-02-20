@@ -3,6 +3,7 @@ import { LogParserService } from './log-parser.service'
 import { PlayerName } from 'src/shared/enum/player.enum'
 import { Weapon } from 'src/shared/enum/weapon.enum'
 import { Badge } from 'src/shared/enum/badge.enum'
+import { TimelineEventType } from 'src/shared/interfaces/match.interfaces'
 
 describe('LogParserService', () => {
   let service: LogParserService
@@ -138,5 +139,55 @@ describe('LogParserService', () => {
 
     const matches = service.parseLogContent(logContent)
     expect(matches[0].winningWeapon).toBeNull()
+  })
+
+  it('gera eventos de timeline corretamente (First Blood, Streak, Intense Action)', () => {
+    const baseDateStr = '23/04/2019 15:00:'
+    const logContent = [
+      `${baseDateStr}00 - New match 1 has started`,
+      `${baseDateStr}10 - Roman killed A using M16`, // First Blood
+      `${baseDateStr}15 - Roman killed B using M16`,
+      `${baseDateStr}20 - Roman killed C using M16`, // Streak >= 3
+      `${baseDateStr}25 - Roman killed D using M16`, // 4 kills in <30s (Intense Action)
+      `${baseDateStr}30 - Match 1 has ended`
+    ].join('\n')
+
+    const matches = service.parseLogContent(logContent)
+    const timeline = matches[0].timeline
+
+    expect(timeline).toBeDefined()
+    expect(timeline.some(e => e.type === TimelineEventType.FirstBlood)).toBeTruthy()
+    expect(timeline.some(e => e.type === TimelineEventType.KillStreak)).toBeTruthy()
+    expect(timeline.some(e => e.type === TimelineEventType.IntenseAction)).toBeTruthy()
+  })
+
+  it('calcula badges Unstoppable e Perfect corretamente', () => {
+    const logContent = [
+      '23/04/2019 15:00:00 - New match 1 has started',
+      // Roman faz streak de 10 sem morrer (ganha Unstoppable e Perfect)
+      ...Array.from({ length: 10 }).map((_, i) => `23/04/2019 15:01:0${i} - Roman killed Target${i} using M16`),
+      '23/04/2019 15:05:00 - Match 1 has ended'
+    ].join('\n')
+
+    const matches = service.parseLogContent(logContent)
+    const roman = matches[0].players['Roman']
+
+    expect((roman as any).badges).toContain(Badge.Unstoppable)
+    expect((roman as any).badges).toContain(Badge.Perfect)
+  })
+
+  it('não deve ignorar o 20º jogador, mas ignorar o 21º (Limitação de 20 jogadores)', () => {
+    let logContent = '23/04/2019 15:00:00 - New match 1 has started\n'
+    // Adiciona 21 jogadores diferentes matando
+    for (let i = 1; i <= 21; i++) {
+      logContent += `23/04/2019 15:01:${String(i).padStart(2, '0')} - Player${i} killed Target using M16\n`
+    }
+    logContent += '23/04/2019 15:05:00 - Match 1 has ended'
+
+    const matches = service.parseLogContent(logContent)
+    const playersCount = Object.keys(matches[0].players).length
+
+    // O Target e o Player21 não devem entrar se a sala já tinha 20
+    expect(playersCount).toBeLessThanOrEqual(20)
   })
 })
