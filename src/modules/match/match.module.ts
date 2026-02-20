@@ -12,6 +12,9 @@ import { GetMatchDetailsUseCase } from './application/use-cases/get-match-detail
 import { PlayerComparisonService } from './application/services/player-comparison.service'
 import { GetPlayerComparisonUseCase } from './application/use-cases/get-player-comparison.use-case'
 import { MatchEntity } from './infra/persistence/model/match.model'
+import { BadgeEngine } from './application/services/engines/badge.engine'
+import { MatchStateManager } from './application/services/engines/match-state.manager'
+import { TimelineEngine } from './application/services/engines/timeline.engine'
 
 /* 
   The MatchModule is the central module that orchestrates all match-related functionality. 
@@ -29,6 +32,9 @@ import { MatchEntity } from './infra/persistence/model/match.model'
       useClass: MatchMongooseRepository,
     },
     LogParserService,
+    BadgeEngine,
+    TimelineEngine,
+    MatchStateManager,
     ProcessLogUseCase,
     GetMatchRankingUseCase,
     GetMatchDetailsUseCase,
@@ -37,4 +43,4 @@ import { MatchEntity } from './infra/persistence/model/match.model'
   ],
   controllers: [MatchController, AnalyticsController],
 })
-export class MatchModule {}
+export class MatchModule { }
