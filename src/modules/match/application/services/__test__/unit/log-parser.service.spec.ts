@@ -16,12 +16,12 @@ describe('LogParserService', () => {
     service = module.get<LogParserService>(LogParserService)
   })
 
-  it('deve estar definido', () => {
+  it('should be defined', () => {
     expect(service).toBeDefined()
   })
 
-  it('deve processar uma partida corretamente e ignorar frags do <WORLD>', () => {
-    // Usando exatamente o log do enunciado
+  it('should process a match correctly and ignore WORLD frags', () => {
+    // Using exactly the log from the specification
     const logContent = `
   23/04/2019 15:34:22 - New match 11348965 has started
   23/04/2019 15:36:04 - ${PlayerName.Roman} killed ${PlayerName.Nick} using M16
@@ -31,13 +31,13 @@ describe('LogParserService', () => {
 
     const matches = service.parseLogContent(logContent)
 
-    // Garante que achou apenas 1 partida
+    // Guarantees it found only 1 match
     expect(matches).toHaveLength(1)
 
     const match = matches[0]
     expect(match.matchId).toBe('11348965')
 
-    // Verifica o Atirador (Roman)
+    // Verify the killer (Roman)
     const roman = match.players[PlayerName.Roman]
     expect(roman).toBeDefined()
     expect(roman.frags).toBe(1)
@@ -45,14 +45,14 @@ describe('LogParserService', () => {
     expect(roman.weapons[Weapon.M16]).toBe(1)
     expect(roman.longestStreak).toBe(1)
 
-    // Verifica a Vítima (Nick)
+    // Verify the victim (Nick)
     const nick = match.players[PlayerName.Nick]
     expect(nick).toBeDefined()
     expect(nick.frags).toBe(0)
-    expect(nick.deaths).toBe(2) // Morreu pro Roman e pro WORLD
+    expect(nick.deaths).toBe(2) // Died to Roman and WORLD
   })
 
-  it('deve processar logs com múltiplas partidas em sequência', () => {
+  it('should process logs with multiple matches in sequence', () => {
     const logContent = `
 23/04/2019 15:34:22 - New match 1 has started
 23/04/2019 15:36:04 - A killed B using AK47
@@ -71,7 +71,7 @@ describe('LogParserService', () => {
     expect(matches[1].players['C'].frags).toBe(1)
   })
 
-  it('deve calcular corretamente o maior streak (sequência) do jogador', () => {
+  it('should calculate player kill streak (sequence) correctly', () => {
     const logContent = `
   23/04/2019 15:34:22 - New match 1 has started
   23/04/2019 15:36:00 - ${PlayerName.Roman} killed A using M16
@@ -90,16 +90,16 @@ describe('LogParserService', () => {
     expect(roman.longestStreak).toBe(3)
   })
 
-  it('deve subtrair frag em caso de friendly fire (mesmo time)', () => {
-    // Simulando que Roman e Marcus são do mesmo time pelo formato do texto lido
-    // Para testar isso limpo, a gente intercepta o objeto antes do loop final
+  it('should subtract frag in case of friendly fire (same team)', () => {
+    // Simulating that Roman and Marcus are on the same team
+    // To test this cleanly, we intercept the object before final loop
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed Marcus using M16`,
       '23/04/2019 15:05:00 - Match 1 has ended'
     ].join('\n')
 
-    // Sobrescrevendo o comportamento para injetar o time artificialmente e testar o IF
+    // Mocking to inject team artificially and test the IF
     jest.spyOn(service as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
       if (!match.players[name]) {
         match.players[name] = { name, frags: 0, deaths: 0, weapons: {}, currentStreak: 0, longestStreak: 0, killTimestamps: [], team: 'Red' }
@@ -109,11 +109,11 @@ describe('LogParserService', () => {
     const matches = service.parseLogContent(logContent)
     const roman = matches[0].players['Roman']
 
-    // Matou amigo, frag fica -1
+    // Killed friend, frag becomes -1
     expect(roman.frags).toBe(-1)
   })
 
-  it('calcula badge RifleKing e Arsenal corretamente', () => {
+  it('should calculate RifleKing and Arsenal badges correctly', () => {
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed A using M16`,
@@ -122,15 +122,15 @@ describe('LogParserService', () => {
       '23/04/2019 15:05:00 - Match 1 has ended'
     ].join('\n')
 
-    jest.restoreAllMocks() // limpando o mock do teste anterior
+    jest.restoreAllMocks() // cleaning the mock from previous test
     const matches = service.parseLogContent(logContent)
     const roman = matches[0].players['Roman']
 
-    // Usou 3 armas diferentes, ganha Arsenal
+    // Used 3 different weapons, gains Arsenal
     expect((roman as any).badges).toContain(Badge.Arsenal)
   })
 
-  it('deve retornar null para a arma mais usada se não houver armas na partida', () => {
+  it('should return null for most used weapon if no weapons in match', () => {
     const logContent = [
       '23/04/2019 15:34:22 - New match 1 has started',
       `23/04/2019 15:36:33 - <WORLD> killed Nick by DROWN`,
@@ -141,7 +141,7 @@ describe('LogParserService', () => {
     expect(matches[0].winningWeapon).toBeNull()
   })
 
-  it('gera eventos de timeline corretamente (First Blood, Streak, Intense Action)', () => {
+  it('should generate timeline events correctly (FirstBlood, Streak, Intense Action)', () => {
     const baseDateStr = '23/04/2019 15:00:'
     const logContent = [
       `${baseDateStr}00 - New match 1 has started`,
@@ -161,7 +161,7 @@ describe('LogParserService', () => {
     expect(timeline.some(e => e.type === TimelineEventType.IntenseAction)).toBeTruthy()
   })
 
-  it('calcula badges Unstoppable e Perfect corretamente', () => {
+  it('should calculate Unstoppable and Perfect badges correctly', () => {
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       // Roman faz streak de 10 sem morrer (ganha Unstoppable e Perfect)
@@ -176,7 +176,7 @@ describe('LogParserService', () => {
     expect((roman as any).badges).toContain(Badge.Perfect)
   })
 
-  it('não deve ignorar o 20º jogador, mas ignorar o 21º (Limitação de 20 jogadores)', () => {
+  it('should not ignore 20th player, but ignore 21st (20 player limit)', () => {
     let logContent = '23/04/2019 15:00:00 - New match 1 has started\n'
     // Adiciona 21 jogadores diferentes matando
     for (let i = 1; i <= 21; i++) {
@@ -187,18 +187,18 @@ describe('LogParserService', () => {
     const matches = service.parseLogContent(logContent)
     const playersCount = Object.keys(matches[0].players).length
 
-    // O Target e o Player21 não devem entrar se a sala já tinha 20
+    // Target and Player21 should not join if room already has 20
     expect(playersCount).toBeLessThanOrEqual(20)
   })
 
-  it('deve subtrair frag em caso de friendly fire (mesmo time)', () => {
+  it('should subtract frag in case of friendly fire (same team)', () => {
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed Marcus using M16`,
       '23/04/2019 15:05:00 - Match 1 has ended'
     ].join('\n')
 
-    // Espionamos e garantimos que eles nasçam com o mesmo time
+    // Make sure they spawn with the same team
     jest.spyOn(service as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
       if (!match.players[name]) {
         match.players[name] = {
@@ -213,10 +213,10 @@ describe('LogParserService', () => {
     const roman = matches[0].players['Roman']
 
     expect(roman.frags).toBe(-1)
-    jest.restoreAllMocks() // Importante limpar aqui
+    jest.restoreAllMocks() // Important: clean up here
   })
 
-  it('não deve permitir mais de 20 jogadores por partida', () => {
+  it('should not allow more than 20 players per match', () => {
     let logContent = '23/04/2019 15:00:00 - New match 1 has started\n'
     // Criamos 25 jogadores. Do 21 ao 25, eles devem ser ignorados
     for (let i = 1; i <= 25; i++) {
@@ -227,7 +227,7 @@ describe('LogParserService', () => {
     const matches = service.parseLogContent(logContent)
     const playersNames = Object.keys(matches[0].players)
 
-    // O limite de 20 deve ser respeitado rigorosamente
+    // 20 player limit must be strictly respected
     expect(playersNames.length).toBeLessThanOrEqual(20)
     expect(playersNames).not.toContain('Player21')
   })
