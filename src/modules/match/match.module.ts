@@ -14,7 +14,7 @@ import { GetPlayerComparisonUseCase } from './application/use-cases/get-player-c
 import { MatchEntity } from './infra/persistence/model/match.model'
 
 /* 
-  O MatchModule é o módulo central que orquestra toda a funcionalidade relacionada às partidas. 
+  The MatchModule is the central module that orchestrates all match-related functionality. 
   Inclui:
   - Persistence: MongoDB schema e repository
   - Services: LogParserService, PlayerComparisonService
