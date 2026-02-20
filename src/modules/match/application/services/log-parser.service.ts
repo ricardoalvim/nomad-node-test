@@ -68,27 +68,27 @@ export class LogParserService {
 
   private finalizeMatch(match: ParsedMatch): void {
     match.timeline = this.timelineEngine.analyze(match)
+    match.winningWeapon = null
 
-    let winner: any = null
+    let topPlayer: any = null
     let maxFrags = -1
-
     for (const name in match.players) {
       if (match.players[name].frags > maxFrags) {
         maxFrags = match.players[name].frags
-        winner = match.players[name]
+        topPlayer = match.players[name]
       }
     }
 
-    if (winner && Object.keys(winner.weapons).length > 0) {
-      match.winningWeapon = Object.entries(winner.weapons)
+    if (topPlayer && Object.keys(topPlayer.weapons).length > 0) {
+      match.winningWeapon = Object.entries(topPlayer.weapons)
         .sort(([, a], [, b]) => (b as number) - (a as number))[0][0] as any
     }
 
-    for (const playerName in match.players) {
-      const player = match.players[playerName]
-      const { awards, badges } = this.badgeEngine.calculate(match, player)
-      player.awards = awards
-      player.badges = badges
+    for (const name in match.players) {
+      const p = match.players[name]
+      const { awards, badges } = this.badgeEngine.calculate(match, p)
+      p.awards = awards
+      p.badges = badges
     }
   }
 

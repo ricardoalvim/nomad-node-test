@@ -1,13 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { LogParserService } from '../../log-parser.service'
 import { Award } from 'src/shared/enum/award.enum'
+import { BadgeEngine } from '../../engines/badge.engine'
+import { MatchStateManager } from '../../engines/match-state.manager'
+import { TimelineEngine } from '../../engines/timeline.engine'
 
 describe('LogParserService - Nomad Test Description Case', () => {
     let service: LogParserService
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [LogParserService],
+            providers: [
+                LogParserService,
+                BadgeEngine,
+                TimelineEngine,
+                MatchStateManager,
+            ],
         }).compile()
 
         service = module.get<LogParserService>(LogParserService)

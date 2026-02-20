@@ -10,10 +10,10 @@ import { TimelineEngine } from '../../engines/timeline.engine'
 
 describe('LogParserService', () => {
   let service: LogParserService
-  let stateManager: MatchStateManager
+  let testingModule: TestingModule
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    testingModule = await Test.createTestingModule({
       providers: [
         LogParserService,
         BadgeEngine,
@@ -22,8 +22,7 @@ describe('LogParserService', () => {
       ],
     }).compile()
 
-    service = module.get<LogParserService>(LogParserService)
-    stateManager = module.get<MatchStateManager>(MatchStateManager)
+    service = testingModule.get<LogParserService>(LogParserService)
   })
 
   it('should be defined', () => {
@@ -33,11 +32,11 @@ describe('LogParserService', () => {
   it('should process a match correctly and ignore WORLD frags', () => {
     // Using exactly the log from the specification
     const logContent = `
-  23/04/2019 15:34:22 - New match 11348965 has started
-  23/04/2019 15:36:04 - ${PlayerName.Roman} killed ${PlayerName.Nick} using M16
-  23/04/2019 15:36:33 - ${PlayerName.World} killed ${PlayerName.Nick} by DROWN
-  23/04/2019 15:39:22 - Match 11348965 has ended
-    `.trim()
+    23/04/2019 15:34:22 - New match 11348965 has started
+    23/04/2019 15:36:04 - ${PlayerName.Roman} killed ${PlayerName.Nick} using M16
+    23/04/2019 15:36:33 - ${PlayerName.World} killed ${PlayerName.Nick} by DROWN
+    23/04/2019 15:39:22 - Match 11348965 has ended
+      `.trim()
 
     const matches = service.parseLogContent(logContent)
 
@@ -64,13 +63,13 @@ describe('LogParserService', () => {
 
   it('should process logs with multiple matches in sequence', () => {
     const logContent = `
-23/04/2019 15:34:22 - New match 1 has started
-23/04/2019 15:36:04 - A killed B using AK47
-23/04/2019 15:39:22 - Match 1 has ended
-24/04/2019 16:14:22 - New match 2 has started
-24/04/2019 16:26:04 - C killed D using M16
-24/04/2019 16:49:22 - Match 2 has ended
-    `.trim()
+  23/04/2019 15:34:22 - New match 1 has started
+  23/04/2019 15:36:04 - A killed B using AK47
+  23/04/2019 15:39:22 - Match 1 has ended
+  24/04/2019 16:14:22 - New match 2 has started
+  24/04/2019 16:26:04 - C killed D using M16
+  24/04/2019 16:49:22 - Match 2 has ended
+      `.trim()
 
     const matches = service.parseLogContent(logContent)
 
@@ -83,14 +82,14 @@ describe('LogParserService', () => {
 
   it('should calculate player kill streak (sequence) correctly', () => {
     const logContent = `
-  23/04/2019 15:34:22 - New match 1 has started
-  23/04/2019 15:36:00 - ${PlayerName.Roman} killed A using M16
-  23/04/2019 15:36:10 - ${PlayerName.Roman} killed B using M16
-  23/04/2019 15:36:20 - ${PlayerName.Roman} killed C using M16
-  23/04/2019 15:36:30 - D killed ${PlayerName.Roman} using AK47
-  23/04/2019 15:36:40 - ${PlayerName.Roman} killed E using M16
-  23/04/2019 15:39:22 - Match 1 has ended
-    `.trim()
+    23/04/2019 15:34:22 - New match 1 has started
+    23/04/2019 15:36:00 - ${PlayerName.Roman} killed A using M16
+    23/04/2019 15:36:10 - ${PlayerName.Roman} killed B using M16
+    23/04/2019 15:36:20 - ${PlayerName.Roman} killed C using M16
+    23/04/2019 15:36:30 - D killed ${PlayerName.Roman} using AK47
+    23/04/2019 15:36:40 - ${PlayerName.Roman} killed E using M16
+    23/04/2019 15:39:22 - Match 1 has ended
+      `.trim()
 
     const matches = service.parseLogContent(logContent)
     const roman = matches[0].players[PlayerName.Roman]
@@ -101,30 +100,27 @@ describe('LogParserService', () => {
   })
 
   it('should subtract frag in case of friendly fire (same team)', () => {
-    // Simulating that Roman and Marcus are on the same team
-    // To test this cleanly, we intercept the object before final loop
+    const sm = testingModule.get<MatchStateManager>(MatchStateManager)
+
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed Marcus using M16`,
       '23/04/2019 15:05:00 - Match 1 has ended'
     ].join('\n')
 
-    // Mocking to inject team artificially and test the IF
-    jest.spyOn(stateManager as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
+    jest.spyOn(sm as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
+      if (name === '<WORLD>') return
       if (!match.players[name]) {
         match.players[name] = {
           name, frags: 0, deaths: 0, weapons: {},
           currentStreak: 0, longestStreak: 0,
-          killTimestamps: [], team: 'Red'
+          killTimestamps: [], team: 'Red', awards: [], badges: []
         }
       }
     })
 
     const matches = service.parseLogContent(logContent)
-    const roman = matches[0].players['Roman']
-
-    // Killed friend, frag becomes -1
-    expect(roman.frags).toBe(-1)
+    expect(matches[0].players['Roman'].frags).toBe(-1)
   })
 
   it('should calculate RifleKing and Arsenal badges correctly', () => {
@@ -206,28 +202,28 @@ describe('LogParserService', () => {
   })
 
   it('should subtract frag in case of friendly fire (same team)', () => {
+    const stateManager = testingModule.get<MatchStateManager>(MatchStateManager)
+
     const logContent = [
       '23/04/2019 15:00:00 - New match 1 has started',
       `23/04/2019 15:01:00 - Roman killed Marcus using M16`,
       '23/04/2019 15:05:00 - Match 1 has ended'
     ].join('\n')
 
-    // Make sure they spawn with the same team
-    jest.spyOn(service as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
+    // AGORA O JEST VAI FUNCIONAR
+    jest.spyOn(stateManager as any, 'ensurePlayerExists').mockImplementation((match: any, name: string) => {
+      if (name === '<WORLD>' || name === 'WORLD') return
       if (!match.players[name]) {
         match.players[name] = {
           name, frags: 0, deaths: 0, weapons: {},
           currentStreak: 0, longestStreak: 0,
-          killTimestamps: [], team: 'Red' // Injetando time
+          killTimestamps: [], team: 'Red', awards: [], badges: []
         }
       }
     })
 
     const matches = service.parseLogContent(logContent)
-    const roman = matches[0].players['Roman']
-
-    expect(roman.frags).toBe(-1)
-    jest.restoreAllMocks() // Important: clean up here
+    expect(matches[0].players['Roman'].frags).toBe(-1)
   })
 
   it('should not allow more than 20 players per match', () => {
