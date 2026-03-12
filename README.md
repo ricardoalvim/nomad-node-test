@@ -1,4 +1,4 @@
-# Nomad FPS Log Parser
+# FPS Log Parser
 
 API enterprise-grade desenvolvida em NestJS para processamento de logs de jogos FPS, geração de rankings em tempo real e analytics avançado de jogadores. Solução modular e escalável pronta para integração em plataformas de gaming competitivo.
 
